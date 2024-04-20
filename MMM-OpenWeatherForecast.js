@@ -258,6 +258,7 @@ Module.register("MMM-OpenWeatherForecast", {
 
   getData: function() {
     this.sendSocketNotification("OPENWEATHER_FORECAST_GET", {
+      apiBaseURL:this.config.apiBaseURL,
       apikey: this.config.apikey,
       latitude: this.config.latitude,
       longitude: this.config.longitude,
