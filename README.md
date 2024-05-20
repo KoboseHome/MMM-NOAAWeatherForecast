@@ -11,14 +11,11 @@ using data from the OpenWeather One Call API. This is a replacement module for M
 
 **NOTE** This module uses the Nunjucks templating system introduced in version 2.2.0 of MagicMirror.  If you're seeing nothing on your display where you expect this module to appear, make sure your MagicMirror version is at least 2.2.0.
 
-
 ## Installation
 
 1. Navigate into your MagicMirror `modules` folder and execute<br>
-`git clone https://github.com/jclarke0000/MMM-OpenWeatherForecast.git`.
+`git clone https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast`.
 2. Enter the new `MMM-OpenWeatherForecast` directory and execute `npm install`.
-
-
 
 ## Configuration
 
@@ -35,7 +32,7 @@ By default the module uses the now deprecated OpenWeatherMap One Call API in ver
 Make sure to subscribe to the new 3.0 API first and wait a couble of hours till the subscription is activated. You will need to provide payment information for the new subscription but as long as you stay under the daily free limit (1000 calls at the moment) you will not be charged.
 
 e.g.,
-```
+```js
   {
     module: "MMM-OpenWeatherForecast",
     position: "top_right",
@@ -228,7 +225,7 @@ For each of current conditions, hourly forecast and daily forecast, there are ad
 ### Valid options for <code>extraCurrentConditions</code>
 
 This shows all available options:
-```
+```js
   extraCurrentConditions: {
     highLowTemp: true,
     precipitation: true,
@@ -244,7 +241,7 @@ This shows all available options:
 ```
 
 This shows just Hi/Low temp display and precipitation:
-```
+```js
   extraCurrentConditions: {
     highLowTemp: true,
     precipitation: true,
@@ -261,7 +258,7 @@ This shows just Hi/Low temp display and precipitation:
 
 ### Valid options for <code>hourlyExtras</code>
 
-```
+```js
   hourlyExtras: {
     precipitation: true,
     wind: true,
@@ -275,7 +272,7 @@ This shows just Hi/Low temp display and precipitation:
 
 ### Valid options for <code>dailyExtras</code>
 
-```
+```js
   dailyExtras: {
     precipitation: true,
     sunrise: true,
@@ -290,7 +287,7 @@ This shows just Hi/Low temp display and precipitation:
 
 ## Sample Configuration
 
-```
+```js
   {
     module: "MMM-OpenWeatherForecast",
     position: "top_right",
@@ -374,7 +371,7 @@ This shows just Hi/Low temp display and precipitation:
 
 This module is set to be 320px wide by default.  If you wish to override it, you can add the following to your `custom.css` file:
 
-```
+```css
 .MMM-OpenWeatherForecast .module-content {
   width: 500px; /* adjust this as desired */
 }
