@@ -24,11 +24,15 @@ using data from the OpenWeather One Call API. This is a replacement module for M
 
 At a minimum you need to supply the following required configuration parameters:
 
-* `apikey` 
+* `apikey`
 * `latitude`
 * `longitude`
 
 `apikey` needs to be specified as a String, while `latitude` and `longitude` can be specified as either a String or a Number.  Both work fine.
+
+By default the module uses the now deprecated OpenWeatherMap One Call API in version 2.5 which will shut down in the future but u can use the config option `apiBaseURL` to specify the URL of the API in version 3.0 which will work, too.
+
+Make sure to subscribe to the new 3.0 API first and wait a couble of hours till the subscription is activated. You will need to provide payment information for the new subscription but as long as you stay under the daily free limit (1000 calls at the moment) you will not be charged.
 
 e.g.,
 ```
@@ -62,6 +66,10 @@ https://www.latlong.net/.
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td><code>apiBaseURL</code></td>
+      <td>An alternative API URL you want to use. I.e. <code>https://api.openweathermap.org/data/3.0/onecall?</code> for the new One Call 3.0 API.<br><br><strong>Type</strong> <code>String</code><br>Defaults to <code>https://api.openweathermap.org/data/2.5/onecall?</code></td>
+    </tr>
     <tr>
       <td><code>updateInterval</code></td>
       <td>How frequently, in minutes, to poll for data.<br><br><strong>Type</strong> <code>Number</code><br>Defaults to <code>10</code></td>
