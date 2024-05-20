@@ -4,7 +4,7 @@ This a module for <strong>MagicMirror</strong><br>
 https://magicmirror.builders/<br>
 https://github.com/MichMich/MagicMirror
 
-![Screenshot](/../screenshots/MMM-OpenWeatherForecast.png?raw=true "Screenshot")
+![Screenshot](MMM-OpenWeatherForecast.png "Screenshot of the module showing a weather forecast")
 
 A weather module that displays current, hourly and daily forecast information
 using data from the OpenWeather One Call API. This is a replacement module for MMM-DarkSkyForecast, now that Dark Sky no longer allows free API access.  This maintains much of the same functionality and adds a few new features.
@@ -362,12 +362,12 @@ This shows just Hi/Low temp display and precipitation:
 
 ## Icon Sets
 
-![Icon Sets](icons/iconsets.png?raw=true "Icon Sets")
+![Icon Sets](iconsets.png "Icon Sets")
 
 
 ## Layouts
 
-![Layouts](/../screenshots/forecast-layouts.jpg?raw=true "Layouts")
+![Layouts](forecast-layouts.jpg "Layouts")
 
 
 ## Styling
