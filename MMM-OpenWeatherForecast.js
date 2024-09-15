@@ -49,6 +49,7 @@ Module.register("MMM-OpenWeatherForecast", {
   requiresVersion: "2.2.0",
 
   defaults: {
+    debug: false,
     apiBaseURL: "https://api.openweathermap.org/data/2.5/onecall?",
     apikey: "",
     latitude: "",
@@ -429,7 +430,10 @@ Module.register("MMM-OpenWeatherForecast", {
     }
 
     // --------- Precipitation ---------
-    fItem.precipitation = this.formatPrecipitation(fData.pop, fData.rain ? fData.rain["1h"] : null, fData.snow ? fData.snow["1h"] : null);
+    //fItem.precipitation = this.formatPrecipitation(fData.pop, fData.rain ? fData.rain["1h"] : null, fData.snow ? fData.snow["1h"] : null);
+    var rain = fData.rain ? (Object.hasOwn(fData.rain, "1h") ? fData.rain["1h"] : fData.rain) : null;
+    var snow = fData.snow ? (Object.hasOwn(fData.snow, "1h") ? fData.snow["1h"] : fData.snow) : null;
+    fItem.precipitation = this.formatPrecipitation(fData.pop, rain, snow);
 
     // --------- Wind ---------
     fItem.wind = (this.formatWind(fData.wind_speed, fData.wind_deg, fData.wind_gust));

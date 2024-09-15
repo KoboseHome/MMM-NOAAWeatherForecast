@@ -31,7 +31,6 @@ module.exports = NodeHelper.create({
 
   socketNotificationReceived: function(notification, payload){
     if (notification === "OPENWEATHER_FORECAST_GET") {
-
       var self = this;
 
       if (payload.apikey == null || payload.apikey == "") {
@@ -49,6 +48,11 @@ module.exports = NodeHelper.create({
           "&units=" + payload.units +
           "&lang=" + payload.language;
 
+        if (typeof self.config !== "undefined"){
+          if (self.config.debug){
+            console.log(url)
+          }
+        }
         /* 
           Update 28-Feb-2021: 
           The old standby Request library has been deprecated.
@@ -67,6 +71,8 @@ module.exports = NodeHelper.create({
 
 
       }
+    } else if (notification === "CONFIG") {
+      self.config = config
     }
   },
 
