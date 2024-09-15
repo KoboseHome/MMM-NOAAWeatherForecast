@@ -64,6 +64,10 @@ https://www.latlong.net/.
   </thead>
   <tbody>
     <tr>
+      <td><code>debug</code></td>
+      <td>If activated some more output is printed to the console (i.e. the URL which is used to fetch the data).<br><br>5<strong>Type</strong> <code>Boolean</code><br>Defaults to <code>false</code></td>
+    </tr>
+    <tr>
       <td><code>apiBaseURL</code></td>
       <td>An alternative API URL you want to use. I.e. <code>https://api.openweathermap.org/data/3.0/onecall?</code> for the new One Call 3.0 API.<br><br><strong>Type</strong> <code>String</code><br>Defaults to <code>https://api.openweathermap.org/data/2.5/onecall?</code></td>
     </tr>

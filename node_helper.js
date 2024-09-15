@@ -30,9 +30,8 @@ module.exports = NodeHelper.create({
   },
 
   socketNotificationReceived: function(notification, payload){
+    var self = this;
     if (notification === "OPENWEATHER_FORECAST_GET") {
-      var self = this;
-
       if (payload.apikey == null || payload.apikey == "") {
         console.log( "[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** No API key configured. Get an API key at https://darksky.net" );
       } else if (payload.latitude == null || payload.latitude == "" || payload.longitude == null || payload.longitude == "") {
@@ -49,10 +48,11 @@ module.exports = NodeHelper.create({
           "&lang=" + payload.language;
 
         if (typeof self.config !== "undefined"){
-          if (self.config.debug){
-            console.log(url)
+          if (self.config.debug === true){
+            console.log(self.name+"Fetching url: "+url)
           }
         }
+	
         /* 
           Update 28-Feb-2021: 
           The old standby Request library has been deprecated.
@@ -72,7 +72,7 @@ module.exports = NodeHelper.create({
 
       }
     } else if (notification === "CONFIG") {
-      self.config = config
+      self.config = payload
     }
   },
 

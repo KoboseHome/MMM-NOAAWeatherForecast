@@ -184,6 +184,8 @@ Module.register("MMM-OpenWeatherForecast", {
 
     Log.info("Starting module: " + this.name);
 
+    this.sendSocketNotification("CONFIG", this.config)
+
     this.weatherData = null;
     this.iconCache = [];
     this.iconIdCounter = 0;
