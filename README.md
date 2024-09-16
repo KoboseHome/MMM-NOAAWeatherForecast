@@ -1,12 +1,10 @@
 # MMM-OpenWeatherForecast
 
-This a weather module for [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror).
+**MMM-OpenWeatherForecast** is a weather module for [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror).
 
-A weather module that displays current, hourly and daily forecast information using data from the OpenWeather One Call API. This is a replacement module for MMM-DarkSkyForecast, now that Dark Sky no longer allows free API access. This maintains much of the same functionality and adds a few new features.
+It displays current, hourly and daily forecast information using data from the OpenWeather One Call API.
 
 ![Screenshot](MMM-OpenWeatherForecast.png "Screenshot of the module showing a weather forecast")
-
-**NOTE** This module uses the Nunjucks templating system introduced in version 2.2.0 of MagicMirror. If you're seeing nothing on your display where you expect this module to appear, make sure your MagicMirror version is at least 2.2.0.
 
 ## Installation
 
@@ -386,3 +384,7 @@ Most important elements of this module have one or more class names applied. Exa
 ## For Module Developers
 
 This module broadcasts a notification when it receives a weather update. The notification is `OPENWEATHER_FORECAST_WEATHER_UPDATE` and the payload contains OpenWeather's JSON weather forecast object for the One Call API. For details on the weather object, see <https://openweathermap.org/api/one-call-api>.
+
+## Credits
+
+This module based on [MMM-DarkSkyForecast](https://github.com/jclarke0000/MMM-DarkSkyForecast) from [Jeff Clarke](https://github.com/jclarke0000).
