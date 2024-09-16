@@ -13,9 +13,7 @@
   "author": "Jeff Clarke",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.21.1",
-    "moment": "^2.29.1",
-    "npm": "^6.4.1"
+    "moment": "^2.30.1"
   },
   "keywords": [
     "MagicMirror",
