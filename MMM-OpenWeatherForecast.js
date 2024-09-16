@@ -10,7 +10,7 @@
   http://darkskyapp.github.io/skycons/
   (using the fork created by Maxime Warner
   that allows individual details of the icons
-  to be coloured
+  to be colored
   https://github.com/maxdow/skycons)
 
   Climacons by Adam Whitcroft
@@ -42,7 +42,7 @@ Module.register("MMM-OpenWeatherForecast", {
 
   /*
     This module uses the Nunjucks templating system introduced in
-    version 2.2.0 of MagicMirror.  If you're seeing nothing on your
+    version 2.2.0 of MagicMirror. If you're seeing nothing on your
     display where you expect this module to appear, make sure your
     MagicMirror version is at least 2.2.0.
   */
@@ -196,7 +196,7 @@ Module.register("MMM-OpenWeatherForecast", {
       set can be used.  If so, it is drawn to the DOM
       and animated on demand as opposed to being 
       contained in animated images such as GIFs or SVGs.
-      This initializes the colours for the icons to use.
+      This initializes the colors for the icons to use.
      */
     if (this.config.useAnimatedIcons) {
       this.skycons = new Skycons({
@@ -238,7 +238,7 @@ Module.register("MMM-OpenWeatherForecast", {
 
 
 
-    //force icon set to mono version whern config.coloured = false
+    //force icon set to mono version when config.colored = false
     if (this.config.colored == false) {
       this.config.iconset = this.config.iconset.replace("c","m");      
     }
