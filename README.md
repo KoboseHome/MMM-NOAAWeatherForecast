@@ -85,7 +85,7 @@ https://www.latlong.net/.
     </tr>
     <tr>
       <td><code>language</code></td>
-      <td>The language to be used for display.<br><br><strong>Type</strong> <code>String</code><br>Defaults to the language set for Magic Mirror, but can be overridden with any of the language codes listed here: <a href="https://openweathermap.org/api/one-call-api#multi">https://openweathermap.org/api/one-call-api#multi</a></td>
+      <td>The language to be used for display.<br><br><strong>Type</strong> <code>String</code><br>Defaults to the language set for MagicMirror, but can be overridden with any of the language codes listed here: <a href="https://openweathermap.org/api/one-call-api#multi">https://openweathermap.org/api/one-call-api#multi</a></td>
     </tr>
     <tr>
       <td><code>units</code></td>
