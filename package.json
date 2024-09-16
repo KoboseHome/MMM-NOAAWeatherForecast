@@ -1,12 +1,12 @@
 {
-  "name": "mmm-darkskyforecast",
+  "name": "mmm-openweatherforecast",
   "version": "1.0.0",
-  "description": "Magic Mirror module that gets weather forecast data from Dark Sky",
+  "description": "MagicMirror² module that gets weather forecast data from OpenWeatherMap.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jclarke0000/MMM-DarkSkyForecast"
+    "url": "git+https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast.git"
   },
-  "main": "MMM-DarkSkyForecast.js",
+  "main": "MMM-OpenWeatherForecast.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,5 +16,11 @@
     "axios": "^0.21.1",
     "moment": "^2.29.1",
     "npm": "^6.4.1"
-  }
+  },
+  "keywords": [
+    "MagicMirror",
+    "OpenWeatherMap",
+    "Weather",
+    "Forecast"
+  ]
 }
