@@ -19,23 +19,23 @@
 
 *********************************/
 
-var NodeHelper = require("node_helper");
-var axios = require('axios').default; //replaces the deprecated Request library
-var moment = require("moment");
+const Log = require("logger");
+const NodeHelper = require("node_helper");
+const moment = require("moment");
 
 module.exports = NodeHelper.create({
 
-  start: function() {
-    console.log("====================== Starting node_helper for module [" + this.name + "]");
+  start() {
+    Log.log("Starting node_helper for: " + this.name);
   },
 
-  socketNotificationReceived: function(notification, payload){
+  async socketNotificationReceived(notification, payload){
     var self = this;
     if (notification === "OPENWEATHER_FORECAST_GET") {
       if (payload.apikey == null || payload.apikey == "") {
-        console.log( "[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** No API key configured. Get an API key at https://darksky.net" );
+        Log.log( "[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** No API key configured. Get an API key at https://darksky.net" );
       } else if (payload.latitude == null || payload.latitude == "" || payload.longitude == null || payload.longitude == "") {
-        console.log( "[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** Latitude and/or longitude not provided." );
+        Log.log( "[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** Latitude and/or longitude not provided." );
       } else {
 
         //make request to OpenWeather One Call API
@@ -49,32 +49,21 @@ module.exports = NodeHelper.create({
 
         if (typeof self.config !== "undefined"){
           if (self.config.debug === true){
-            console.log(self.name+"Fetching url: "+url)
+            Log.log(self.name+"Fetching url: "+url)
           }
         }
 	
-        /* 
-          Update 28-Feb-2021: 
-          The old standby Request library has been deprecated.
-          So data fetch is now done with Axios.
-         */
-        axios.get(url)
-          .then(function (response) {
-            // handle success
-            response.data.instanceId = payload.instanceId;
-            self.sendSocketNotification("OPENWEATHER_FORECAST_DATA", response.data);
-          })
-          .catch(function (error) {
-            // handle error
-            console.log( "[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** " + error );
-          });
-
-
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+          data.instanceId = payload.instanceId;
+          self.sendSocketNotification("OPENWEATHER_FORECAST_DATA", data);
+        } catch (error) {
+          Log.error("[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** " + error);
+        }
       }
     } else if (notification === "CONFIG") {
       self.config = payload
     }
   },
-
-
 });

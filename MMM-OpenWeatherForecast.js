@@ -1,6 +1,6 @@
 /*********************************
 
-  Magic Mirror Module:
+  MagicMirror² Module:
   MMM-OpenWeatherForecast
   https://github.com/jclarke0000/MMM-OpenWeatherForecast
 
@@ -10,7 +10,7 @@
   http://darkskyapp.github.io/skycons/
   (using the fork created by Maxime Warner
   that allows individual details of the icons
-  to be coloured
+  to be colored
   https://github.com/maxdow/skycons)
 
   Climacons by Adam Whitcroft
@@ -42,7 +42,7 @@ Module.register("MMM-OpenWeatherForecast", {
 
   /*
     This module uses the Nunjucks templating system introduced in
-    version 2.2.0 of MagicMirror.  If you're seeing nothing on your
+    version 2.2.0 of MagicMirror. If you're seeing nothing on your
     display where you expect this module to appear, make sure your
     MagicMirror version is at least 2.2.0.
   */
@@ -134,15 +134,15 @@ Module.register("MMM-OpenWeatherForecast", {
   validUnits: ["standard","metric","imperial"],
   validLayouts: ["tiled", "table"],
 
-  getScripts: function() {
+  getScripts() {
     return ["moment.js", this.file("skycons.js")];
   },
 
-  getStyles: function () {
+  getStyles() {
     return ["MMM-OpenWeatherForecast.css"];
   },
 
-  getTemplate: function () {
+  getTemplate() {
     return "mmm-openweather-forecast.njk";
   },
 
@@ -153,7 +153,7 @@ Module.register("MMM-OpenWeatherForecast", {
     a certain section should be displayed, and simple loops for the hourly
     and daily forecast.
    */
-  getTemplateData: function () {
+  getTemplateData() {
     return {
       phrases: {
         loading: this.translate("LOADING")
@@ -180,7 +180,7 @@ Module.register("MMM-OpenWeatherForecast", {
     };
   },
 
-  start: function() {
+  start() {
 
     Log.info("Starting module: " + this.name);
 
@@ -196,7 +196,7 @@ Module.register("MMM-OpenWeatherForecast", {
       set can be used.  If so, it is drawn to the DOM
       and animated on demand as opposed to being 
       contained in animated images such as GIFs or SVGs.
-      This initializes the colours for the icons to use.
+      This initializes the colors for the icons to use.
      */
     if (this.config.useAnimatedIcons) {
       this.skycons = new Skycons({
@@ -238,19 +238,19 @@ Module.register("MMM-OpenWeatherForecast", {
 
 
 
-    //force icon set to mono version whern config.coloured = false
+    //force icon set to mono version when config.colored = false
     if (this.config.colored == false) {
       this.config.iconset = this.config.iconset.replace("c","m");      
     }
 
     //start data poll
     var self = this;
-    setTimeout(function() {
+    setTimeout(function () {
 
       //first data pull is delayed by config
       self.getData();
 
-      setInterval(function() {
+      setInterval(function () {
         self.getData();
       }, self.config.updateInterval * 60 * 1000); //convert to milliseconds
 
@@ -259,7 +259,7 @@ Module.register("MMM-OpenWeatherForecast", {
 
   },
 
-  getData: function() {
+  getData() {
     this.sendSocketNotification("OPENWEATHER_FORECAST_GET", {
       apiBaseURL:this.config.apiBaseURL,
       apikey: this.config.apikey,
@@ -273,7 +273,7 @@ Module.register("MMM-OpenWeatherForecast", {
 
   },
 
-  socketNotificationReceived: function(notification, payload) {
+  socketNotificationReceived(notification, payload) {
 
     if (notification == "OPENWEATHER_FORECAST_DATA" && payload.instanceId == this.identifier) {
 
@@ -294,7 +294,7 @@ Module.register("MMM-OpenWeatherForecast", {
       //start icon playback
       if (this.config.useAnimatedIcons) {
         var self = this;
-        setTimeout(function() {
+        setTimeout(function () {
           self.playIcons(self);
         }, this.config.updateFadeSpeed + this.config.animatedIconStartDelay);
       } 
@@ -309,7 +309,7 @@ Module.register("MMM-OpenWeatherForecast", {
     if statements to determine if a certain section should be displayed, and a simple loop to go through
     the houly / daily forecast items.
   */
-  processWeatherData: function() {
+  processWeatherData() {
 
     var timeZoneOffset = this.weatherData.timezone_offset;
     var summary = this.weatherData.current.weather[0].description.substring(0,1).toUpperCase() + this.weatherData.current.weather[0].description.substring(1) + ".";
@@ -397,7 +397,7 @@ Module.register("MMM-OpenWeatherForecast", {
     Hourly and Daily forecast items are very similar.  So one routine builds the data
     objects for both.
    */
-  forecastItemFactory: function(fData, type) {
+  forecastItemFactory(fData, type) {
 
     var fItem = new Object();
 
@@ -471,7 +471,7 @@ Module.register("MMM-OpenWeatherForecast", {
   /*
     Returns a formatted data object for High / Low temperature range
    */
-  formatHiLowTemperature: function(h,l) {
+  formatHiLowTemperature(h,l) {
     return {
       high: (!this.config.concise ? this.config.label_high + " " : "") + Math.round(h) + "°",
       low: (!this.config.concise ? this.config.label_low + " " : "") + Math.round(l) + "°"
@@ -481,7 +481,7 @@ Module.register("MMM-OpenWeatherForecast", {
   /*
     Returns a formatted data object for precipitation
    */
-  formatPrecipitation: function(percentChance, rainAccumulation, snowAccumulation) {
+  formatPrecipitation(percentChance, rainAccumulation, snowAccumulation) {
 
     var accumulation = null;
 
@@ -504,7 +504,7 @@ Module.register("MMM-OpenWeatherForecast", {
   /*
     Returns a formatted data object for wind conditions
    */
-  formatWind: function(speed, bearing, gust) {
+  formatWind(speed, bearing, gust) {
 
     var conversionFactor = 1;
     if (this.config.units != "imperial" && this.config.displayKmhForWind) {
@@ -526,7 +526,7 @@ Module.register("MMM-OpenWeatherForecast", {
   /*
     Returns the units in use for the data pull from Dark Sky
    */
-  getUnit: function(metric) {
+  getUnit(metric) {
 
     if (metric == "windSpeed" && this.config.units != "imperial" && this.config.displayKmhForWind) {
       return "km/h"
@@ -540,7 +540,7 @@ Module.register("MMM-OpenWeatherForecast", {
     Formats the wind direction into common ordinals (e.g.: NE, WSW, etc.)
     Wind direction is provided in degress from North in the data feed.
    */
-  getOrdinal: function(bearing) {
+  getOrdinal(bearing) {
     return this.config.label_ordinals[Math.round(bearing * 16 / 360) % 16];
   },
 
@@ -615,7 +615,6 @@ Module.register("MMM-OpenWeatherForecast", {
     "5c": {path:"5c", format:"svg"},
   },
 
-
 /*
     Previous version of this module was built for Dark Sky which had it's own icon set.
     In order to reuse those icon, I need to map the standard icon IDs to the Dark Sky
@@ -660,23 +659,21 @@ Module.register("MMM-OpenWeatherForecast", {
   /*
     This generates a URL to the icon file
    */
-  generateIconSrc: function(icon) {
+  generateIconSrc(icon) {
     return this.file("icons/" + this.iconsets[this.config.iconset].path + "/" +
         icon + "." + this.iconsets[this.config.iconset].format);
 
   },
-
-
 
   /*
     When the Skycons animated set is in use, the icons need
     to be rebuilt with each data refresh.  This routine clears
     the icon cache before the data refresh is processed.
    */
-  clearIcons: function() {
+  clearIcons() {
     this.skycons.pause();
     var self = this;
-    this.iconCache.forEach(function(icon) {
+    this.iconCache.forEach(function (icon) {
       self.skycons.remove(icon.id);
     });
     this.iconCache = [];
@@ -688,9 +685,9 @@ Module.register("MMM-OpenWeatherForecast", {
     to be rebuilt with each data refresh.  This routine adds
     an icon record to the cache.
    */
-  addIcon: function(icon, isMainIcon) {
+  addIcon(icon, isMainIcon) {
 
-    console.log(" ================== Adding icon: " + icon + ", " + isMainIcon);
+    Log.log("Adding icon: " + icon + ", " + isMainIcon);
 
     //id to use for the canvas element
     var iconId;
@@ -718,9 +715,9 @@ Module.register("MMM-OpenWeatherForecast", {
     happen until after updateDom() finishes executing
     before actually drawing the icons.
   */
-  playIcons: function(inst) {
+  playIcons(inst) {
     inst.iconCache.forEach(function(icon) {
-      console.log("=============== Adding animated icon " +icon.id + ": '" + icon.icon +"'");
+      Log.log("Adding animated icon " +icon.id + ": '" + icon.icon +"'");
       inst.skycons.add(icon.id, icon.icon);
     });
     inst.skycons.play();
@@ -732,7 +729,7 @@ Module.register("MMM-OpenWeatherForecast", {
     routine ensures they are numbers, and if they cannot be
     converted to integers, then the module defaults are used.
    */
-  sanitizeNumbers: function(keys) {
+  sanitizeNumbers(keys) {
 
     var self = this;
     keys.forEach(function(key) {
@@ -743,8 +740,4 @@ Module.register("MMM-OpenWeatherForecast", {
       }
     });
   }
-
-
-
-
 });
