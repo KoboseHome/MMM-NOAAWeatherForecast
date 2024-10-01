@@ -50,7 +50,7 @@ Module.register("MMM-OpenWeatherForecast", {
 
   defaults: {
     debug: false,
-    apiBaseURL: "https://api.openweathermap.org/data/2.5/onecall?",
+    apiBaseURL: "https://api.openweathermap.org/data/3.0/onecall?",
     apikey: "",
     latitude: "",
     longitude: "",
