@@ -381,7 +381,7 @@ Most important elements of this module have one or more class names applied. Exa
 
 ## For Module Developers
 
-This module broadcasts a notification when it receives a weather update. The notification is `OPENWEATHER_FORECAST_WEATHER_UPDATE` and the payload contains OpenWeather's JSON weather forecast object for the One Call API. For details on the weather object, see <https://openweathermap.org/api/one-call-api>.
+This module broadcasts a notification when it receives a weather update. The notification is `OPENWEATHER_FORECAST_WEATHER_UPDATE` and the payload contains OpenWeather's JSON weather forecast object for the One Call API. For details on the weather object, see <https://openweathermap.org/api/one-call-3>.
 
 ## Credits
 
