@@ -15,7 +15,7 @@
 
   The OpenWeather OneCall API request looks like this:
 
-    http://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&lang={lang}&exclude=minutely&units={units}&lang={lang}
+    https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude=minutely&appid={API key}&units={units}&lang={lang}
 
 *********************************/
 
@@ -33,7 +33,7 @@ module.exports = NodeHelper.create({
     var self = this;
     if (notification === "OPENWEATHER_FORECAST_GET") {
       if (payload.apikey == null || payload.apikey == "") {
-        Log.log( "[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** No API key configured. Get an API key at https://darksky.net" );
+        Log.log( "[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** No API key configured. Get an API key at https://openweathermap.org/" );
       } else if (payload.latitude == null || payload.latitude == "" || payload.longitude == null || payload.longitude == "") {
         Log.log( "[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** Latitude and/or longitude not provided." );
       } else {
