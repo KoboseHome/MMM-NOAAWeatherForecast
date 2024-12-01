@@ -52,15 +52,21 @@ module.exports = NodeHelper.create({
             Log.log(self.name+"Fetching url: "+url)
           }
         }
-	
-        try {
-          const response = await fetch(url);
-          const data = await response.json();
-          data.instanceId = payload.instanceId;
-          self.sendSocketNotification("OPENWEATHER_FORECAST_DATA", data);
-        } catch (error) {
-          Log.error("[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** " + error+"\n"+error.stack);
-        }
+
+        fetch(url)
+          .then(response => {
+            if (response.status !== 200){
+              console.log(response)
+            } else {
+              return response.json()
+            }
+          }).then(data => {
+            if (typeof data !== "undefined") {
+              data.instanceId = payload.instanceId;
+              self.sendSocketNotification("OPENWEATHER_FORECAST_DATA", data);
+            }
+          })
+          .catch(error => Log.error("[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** " + error+"\n"+error.stack));
       }
     } else if (notification === "CONFIG") {
       self.config = payload
