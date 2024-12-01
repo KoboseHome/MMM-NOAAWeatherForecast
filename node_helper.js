@@ -59,7 +59,7 @@ module.exports = NodeHelper.create({
           data.instanceId = payload.instanceId;
           self.sendSocketNotification("OPENWEATHER_FORECAST_DATA", data);
         } catch (error) {
-          Log.error("[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** " + error);
+          Log.error("[MMM-OpenWeatherForecast] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** " + error+"\n"+error.stack);
         }
       }
     } else if (notification === "CONFIG") {
