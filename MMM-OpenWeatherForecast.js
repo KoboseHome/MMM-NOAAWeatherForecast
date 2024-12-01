@@ -276,29 +276,29 @@ Module.register("MMM-OpenWeatherForecast", {
   socketNotificationReceived(notification, payload) {
 
     if (notification == "OPENWEATHER_FORECAST_DATA" && payload.instanceId == this.identifier) {
+      if (typeof payload.current !== "undefined"){
+        //clear animated icon cache
+        if (this.config.useAnimatedIcons) {
+          this.clearIcons();
+        }
 
-      //clear animated icon cache
-      if (this.config.useAnimatedIcons) {
-        this.clearIcons();
+        //process weather data
+        this.weatherData = payload;
+        this.formattedWeatherData = this.processWeatherData();
+
+        this.updateDom(this.config.updateFadeSpeed);
+
+        //broadcast weather update
+        this.sendNotification("OPENWEATHER_FORECAST_WEATHER_UPDATE", payload);
+
+        //start icon playback
+        if (this.config.useAnimatedIcons) {
+          var self = this;
+          setTimeout(function () {
+            self.playIcons(self);
+          }, this.config.updateFadeSpeed + this.config.animatedIconStartDelay);
+        } 
       }
-
-      //process weather data
-      this.weatherData = payload;
-      this.formattedWeatherData = this.processWeatherData();
-
-      this.updateDom(this.config.updateFadeSpeed);
-
-      //broadcast weather update
-      this.sendNotification("OPENWEATHER_FORECAST_WEATHER_UPDATE", payload);
-
-      //start icon playback
-      if (this.config.useAnimatedIcons) {
-        var self = this;
-        setTimeout(function () {
-          self.playIcons(self);
-        }, this.config.updateFadeSpeed + this.config.animatedIconStartDelay);
-      } 
-
     }
 
 
