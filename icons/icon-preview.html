@@ -33,7 +33,7 @@
   <body>
     <script language="javascript">
 
-      var iconSets = [
+      let iconSets = [
         "1c",
         "1m",
         "2c",
@@ -46,7 +46,7 @@
         "5m"
       ];
 
-      var icons = [
+      let icons = [
         "clear-day",
         "clear-night",
         "cloudy",
@@ -62,15 +62,15 @@
         "wind"
       ];
 
-      for (var i = 0; i < iconSets.length; i++) {
-        var iconSet = document.createElement("div");
+      for (let i = 0; i < iconSets.length; i++) {
+        let iconSet = document.createElement("div");
 
-        var iconSetTitle = document.createElement("h1");
+        let iconSetTitle = document.createElement("h1");
         iconSetTitle.innerHTML = iconSets[i];
         iconSet.appendChild(iconSetTitle);
 
-        for (var j = 0; j < icons.length; j++) {
-          var icon = document.createElement("img");
+        for (let j = 0; j < icons.length; j++) {
+          let icon = document.createElement("img");
           icon.src = iconSets[i] + "/" + icons[j] + ".svg";
           iconSet.appendChild(icon)
         }

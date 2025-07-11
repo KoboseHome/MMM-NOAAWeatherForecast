@@ -1,14 +1,17 @@
 {
   "name": "mmm-openweatherforecast",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MagicMirror² module that gets weather forecast data from OpenWeatherMap.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast.git"
   },
   "main": "MMM-OpenWeatherForecast.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "test": "node --run lint"
   },
   "author": "Jeff Clarke",
   "license": "MIT",
@@ -20,5 +23,13 @@
     "OpenWeatherMap",
     "Weather",
     "Forecast"
-  ]
+  ],
+  "devDependencies": {
+    "@eslint/css": "^0.10.0",
+    "@eslint/js": "^9.30.1",
+    "@eslint/markdown": "^7.0.0",
+    "@stylistic/eslint-plugin": "^5.1.0",
+    "eslint": "^9.30.1",
+    "globals": "^16.3.0"
+  }
 }
