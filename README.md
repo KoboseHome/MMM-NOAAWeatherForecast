@@ -8,9 +8,24 @@ It displays current, hourly and daily forecast information using data from the O
 
 ## Installation
 
-1. Navigate into your MagicMirror `modules` folder and execute
-  `git clone https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast`.
-2. Enter the new `MMM-OpenWeatherForecast` directory and execute `npm install`.
+Just clone the module into your modules directory and install the dependencies:
+
+```bash
+cd ~/MagicMirror/modules
+git clone https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast
+cd MMM-OpenWeatherForecast
+npm ci
+```
+
+## Update
+
+Just enter the module's directory, pull the update and install the dependencies:
+
+```bash
+cd ~/MagicMirror/modules/MMM-OpenWeatherForecast
+git pull
+npm ci
+```
 
 ## Configuration
 
@@ -26,7 +41,7 @@ By default the module uses the OpenWeater One Call API in version 3.0 now cause 
 
 Make sure to subscribe to the new 3.0 API first and wait a couple hours till the subscription is activated. You will need to provide payment information for the new subscription but as long as you stay under the daily free limit (1000 calls at the moment) you will not be charged.
 
-e.g.,
+### Example Configuration
 
 ```js
   {
