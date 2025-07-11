@@ -7,6 +7,7 @@
     "url": "git+https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast.git"
   },
   "main": "MMM-OpenWeatherForecast.js",
+  "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
