@@ -35,13 +35,17 @@ At a minimum you need to supply the following required configuration parameters:
 * `latitude`
 * `longitude`
 
-`apikey` needs to be specified as a String, while `latitude` and `longitude` can be specified as either a String or a Number. Both work fine.
+`apikey` needs to be specified as a string, while `latitude` and `longitude` can be specified as either a string or a number. Both work fine.
 
-By default the module uses the OpenWeater One Call API in version 3.0 now cause version 2.5 has been shut down in June 2024. If you know what you are doing you can use the config option `apiBaseURL` to specify the URL you like. 
+
+You need to create a free account with OpenWeather in order to get an API key: <https://home.openweathermap.org/users/sign_up>.
 
 Make sure to subscribe to the new 3.0 API first and wait a couple hours till the subscription is activated. You will need to provide payment information for the new subscription but as long as you stay under the daily free limit (1000 calls at the moment) you will not be charged.
 
-### Example Configuration
+Find out your latitude and longitude here:
+<https://www.latlong.net/>.
+
+### Minimal Configuration
 
 ```js
   {
@@ -49,18 +53,12 @@ Make sure to subscribe to the new 3.0 API first and wait a couple hours till the
     position: "top_right",
     header: "Forecast",
     config: {
-      apikey: "a1b2c3d4e5f6g7h8j9k0", //only string here
-      latitude: 51.490230,            //number works here
-      longitude: "-0.258810"          //so does a string
+      apikey: "a1b2c3d4e5f6g7h8j9k0", // only string here
+      latitude: 51.490230,            // number works here
+      longitude: "-0.258810"          // so does a string
     }
   },
 ```
-
-You need to create a free account with OpenWeather in order to get an API key:
-<https://home.openweathermap.org/users/sign_up>.
-
-Find out your latitude and longitude here:
-<https://www.latlong.net/>.
 
 ### Other optional parameters
 
@@ -72,10 +70,6 @@ Find out your latitude and longitude here:
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td><code>debug</code></td>
-      <td>If activated some more output is printed to the console (i.e. the URL which is used to fetch the data).<br><br>5<strong>Type</strong> <code>Boolean</code><br>Defaults to <code>false</code></td>
-    </tr>
     <tr>
       <td><code>apiBaseURL</code></td>
       <td>An alternative API URL you want to use. I.e. <code>https://api.openweathermap.org/data/3.0/onecall?</code> for the new One Call 3.0 API.<br><br><strong>Type</strong> <code>String</code><br>Defaults to <code>https://api.openweathermap.org/data/3.0/onecall?</code></td>
@@ -311,7 +305,7 @@ This shows just Hi/Low temp display and precipitation:
     position: "top_right",
     header: "Forecast",
     config: {
-      apikey: "********************", //SUPER SECRET
+      apikey: "********************",
       latitude: 43.653225,
       longitude: -79.383186,
       units: "metric",
@@ -320,7 +314,6 @@ This shows just Hi/Low temp display and precipitation:
       concise: true,
       requestDelay: "2000",
       showFeelsLikeTemp: true,
-
       showCurrentConditions: true,
       showSummary: true,
       showExtraCurrentConditions: true,
@@ -336,10 +329,8 @@ This shows just Hi/Low temp display and precipitation:
         uvIndex: true,
         visibility: false
       },
-
       forecastLayout: "table",
       forecastHeaderText: "",
-
       hourlyForecastTableHeaderText: "By the hour",
       showHourlyForecast: true,
       showHourlyTableHeaderRow: true,
@@ -354,7 +345,6 @@ This shows just Hi/Low temp display and precipitation:
         uvIndex: false,
         visibility: false
       },
-
       dailyForecastTableHeaderText: "Throughout the week",
       showDailyForecast: true,
       showDailyTableHeaderRow: true,
@@ -369,7 +359,6 @@ This shows just Hi/Low temp display and precipitation:
         dewPoint: false,
         uvIndex: false
       },
-
     }
   },
 ```
@@ -397,6 +386,21 @@ Most important elements of this module have one or more class names applied. Exa
 ## For Module Developers
 
 This module broadcasts a notification when it receives a weather update. The notification is `OPENWEATHER_FORECAST_WEATHER_UPDATE` and the payload contains OpenWeather's JSON weather forecast object for the One Call API. For details on the weather object, see <https://openweathermap.org/api/one-call-3>.
+
+## Contributing
+
+If you find any problems, bugs or have questions, please open a GitHub issue in this repository.
+
+Pull requests are of course also very welcome 🙂
+
+### Developer commands
+
+- `node --run lint` - Run linting checks.
+- `node --run lint:fix` - Fix linting issues.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
 
 ## Credits
 
