@@ -48,204 +48,268 @@ Module.register("MMM-NOAAWeatherForecast", {
   requiresVersion: "2.2.0",
 
   defaults: {
-    // You should use the weather.gov API which is rate-limited to 50 requests per minute
-    // So updateInterval needs to be at least 1.2 minutes (72 seconds)
-    // to keep you within the limits of the API.
-    // However, it's recommended to use a longer interval since weather forecasts don't change that frequently.
-    updateInterval: 10 * 60 * 1000, // 10 minutes
-
-    lat: null, // Required. Find with http://www.latlong.net/
-    lon: null, // Required. Find with http://www.latlong.net/
-
-    location: "Location", // The name of the location to display
-    units: "imperial", // "imperial" or "metric"
-    language: "en-us", // "en-us", "es-es", etc.
-    showForecastDays: 5, // The number of days to show a forecast for
-    showHourlyForecast: 24, // The number of hourly forecasts to show
-    showSummary: true, // Show the summary text
-    showIcon: true, // Show the weather icon
-    showTemps: true, // Show high/low temperatures
-    showPrecipitation: true, // Show precipitation probability
-    showWind: true, // Show wind speed and direction
-    showHumidity: true, // Show humidity
-    showSunriseSunset: true, // Show sunrise and sunset times
-    showFeelsLike: false, // Show "feels like" temperature
-    showUVIndex: false, // Show UV index
-
-    // Icon packs. Use one or more of these
-    iconSets: ["skycons", "climacons"],
-
-    // The Skycons animated icon set can be colored
-    skyconColors: {
-      sun: "#fff",
-      moon: "#fff",
-      cloud: "#999",
-      rain: "#00f",
-      sleet: "#66f",
-      snow: "#fff",
-      wind: "#666",
-      fog: "#999"
-    },
-
-    animationSpeed: 1000,
     debug: false,
-    useHeader: true
+    apiBase: "https://api.weather.gov/points/",
+    units: "imperial",
+    language: config.language,
+    latitude: null,
+    longitude: null,
+    forecastType: "daily",
+    updateInterval: 10 * 60 * 1000, // 10 minutes
+    animationSpeed: 2 * 1000,
+    timeFormat: 12,
+    showForecastRow: true,
+    showHourlyForecast: true,
+    showExtendedForecast: true,
+    showSummary: true,
+    showDailyForecast: true,
+    useSkycons: true,
+    showIcons: true,
+    iconSet: "1",
+    fade: true,
+    fadePoint: 0.25,
+    maxDays: 5,
+    maxHourly: 24,
+    showMinimumGrid: false,
+    showPrecipitationGrid: true,
+    showDewpointGrid: false,
+    showWindSpeedGrid: true,
+    showWindDirectionGrid: true,
+    showCloudCoverGrid: true,
+    showRelativeHumidityGrid: true,
+    showVisibilityGrid: false,
+    showHeatIndexGrid: false,
+    showApparentTemperatureGrid: true,
+    showProbabilityOfPrecipitation: true,
+    showTemperatures: true,
+    showWindSpeed: true,
+    showWindDirection: true,
+    showSunrise: true,
+    showSunset: true,
+    showCurrentConditions: true,
+    showFeelsLikeTemp: false,
+    label_hourlyTimeFormat: "h a",
+    label_dailyTimeFormat: "ddd",
   },
 
   getScripts: function () {
     return [
       "moment.js",
-      this.file("node_modules/skycons/skycons.js"),
-      "moment-timezone"
+      this.file("node_modules/moment-timezone/builds/moment-timezone-with-data-2012-2022.min.js"),
+      "https://cdnjs.cloudflare.com/ajax/libs/skycons/1396650462/skycons.js",
     ];
   },
 
   getStyles: function () {
     return [
-      "weather-icons.css",
+      "MMM-NOAAWeatherForecast.css",
       "font-awesome.css",
-      this.file("style/style.css"),
     ];
   },
 
   getTemplate: function () {
-    return "forecast.njk";
+    return "MMM-NOAAWeatherForecast.njk";
   },
 
   getTemplateData: function () {
-    return this.forecast;
+    return {
+      loaded: this.loaded,
+      config: this.config,
+      forecast: this.formattedWeatherData,
+      skyconsEnabled: this.config.useSkycons && this.config.showIcons,
+      playIcons: this.playIcons.bind(this),
+    };
   },
 
   start: function () {
     Log.info(`Starting module: ${this.name}`);
-    this.forecast = null;
-    this.loading = true;
+    this.forecast = {};
+    this.forecast.currently = {};
+    this.forecast.daily = {};
+    this.forecast.hourly = {};
     this.iconCache = [];
-    this.skycons = new Skycons({
-      "monochrome": false
-    });
-    this.skycons.color(this.config.skyconColors);
-    this.sanitizeNumbers(["lat", "lon"]);
-    this.loadForecast();
-  },
-
-  loadForecast: function () {
-    if (this.config.debug) {
-      Log.log("[MMM-NOAAWeatherForecast] Loading forecast...");
-    }
-
-    const apiUrl = `https://api.weather.gov/points/${this.config.lat},${this.config.lon}`;
-    this.sendSocketNotification("FETCH_FORECAST", {
-      apiUrl: apiUrl,
-      lat: this.config.lat,
-      lon: this.config.lon,
-    });
-  },
-
-  socketNotificationReceived: function (notification, payload) {
-    if (this.config.debug) {
-      Log.log(`[MMM-NOAAWeatherForecast] Received notification: ${notification}`);
-    }
-
-    if (notification === "FORECAST_DATA") {
-      if (this.config.debug) {
-        Log.log("[MMM-NOAAWeatherForecast] Got forecast data:", payload);
-      }
-      this.forecast = payload;
-      this.loading = false;
-      this.updateDom(this.config.animationSpeed);
-    } else if (notification === "FORECAST_ERROR") {
-      this.loading = false;
-      this.updateDom(this.config.animationSpeed);
-      Log.error("[MMM-NOAAWeatherForecast] Forecast error:", payload);
-    }
+    this.loaded = false;
+    this.instanceId = moment().unix();
+    this.getForecast();
+    this.scheduleUpdate();
   },
 
   getDom: function () {
-    if (this.loading) {
-      const wrapper = document.createElement("div");
-      wrapper.innerHTML = "LOADING FORECAST...";
-      wrapper.className = "dimmed light small";
-      return wrapper;
-    }
-
-    if (!this.forecast) {
-      const wrapper = document.createElement("div");
-      wrapper.innerHTML = "FORECAST DATA NOT AVAILABLE";
-      wrapper.className = "dimmed light small";
-      return wrapper;
-    }
-
-    this.forecast.forecasts.forEach(forecast => {
-      // Add icon to cache for Skycons
-      if (this.config.iconSets.includes("skycons")) {
-        const iconId = `skycon_${forecast.timestamp}`;
-        this.iconCache.push({ id: iconId, icon: this.getSkycon(forecast.icon) });
-      }
-    });
-
-    this.forecast.hourlyForecasts.forEach(hourly => {
-      // Add icon to cache for Skycons
-      if (this.config.iconSets.includes("skycons")) {
-        const iconId = `skycon_hourly_${hourly.timestamp}`;
-        this.iconCache.push({ id: iconId, icon: this.getSkycon(hourly.icon) });
-      }
-    });
-
     const wrapper = document.createElement("div");
-    wrapper.innerHTML = this.render(this.getTemplate(), this.getTemplateData());
 
-    // Play icons after DOM is updated
-    this.playIcons(this);
-
-    return wrapper;
+    if (!this.loaded) {
+      wrapper.innerHTML = "LOADING...";
+      wrapper.className = "dimmed light small";
+      return wrapper;
+    }
+    
+    // The main DOM creation logic is now in the Nunjucks template.
+    // This method is now only responsible for returning the result of the template.
+    return this.render(this.getTemplate(), this.getTemplateData());
   },
 
-  // Helper function to return the correct Skycon icon name
-  getSkycon: function (icon) {
-    const iconName = icon.split("/").pop().split(",")[0];
-    switch (iconName) {
-      case "skc":
-        return "clear-day";
-      case "few":
-        return "partly-cloudy-day";
-      case "sct":
-      case "bkn":
-        return "cloudy";
-      case "ovc":
-        return "cloudy";
-      case "wind_skc":
-      case "wind_few":
-      case "wind_sct":
-      case "wind_bkn":
-      case "wind_ovc":
-        return "wind";
-      case "rain_showers":
-      case "rain_showers_hi":
-        return "rain";
-      case "isolated_showers":
-        return "rain";
-      case "sct_showers":
-        return "rain";
-      case "rain":
-        return "rain";
-      case "tornado":
-        return "tornado";
-      case "snow":
-      case "snow_fzra":
-      case "wintry_mix":
-        return "snow";
-      case "sleet":
-        return "sleet";
-      case "fog":
-        return "fog";
-      case "tsra":
-      case "tsra_sct":
-      case "tsra_hi":
-        return "thunderstorms";
-      default:
-        return "cloudy"; // Default icon
+  getForecast: function () {
+    Log.info(`[MMM-NOAAWeatherForecast] Getting forecast for instance: ${this.instanceId}`);
+    this.sendSocketNotification("NOAA_CALL_FORECAST_GET", {
+      instanceId: this.instanceId,
+      latitude: this.config.latitude,
+      longitude: this.config.longitude,
+      units: this.config.units,
+      language: this.config.language,
+    });
+  },
+
+  processForecast: function (data) {
+    if (!data || !data.hourly || !data.daily || !data.grid) {
+      Log.error("[MMM-NOAAWeatherForecast] Invalid data received from node_helper. Missing 'hourly', 'daily', or 'grid' properties.");
+      this.updateDom(this.config.animationSpeed);
+      return;
     }
+
+    this.forecast.hourly = data.hourly;
+    this.forecast.daily = data.daily;
+    this.forecast.grid = data.grid;
+
+    // Set 'currently' from the first hourly period
+    if (this.forecast.hourly.properties.periods.length > 0) {
+      const currentPeriod = this.forecast.hourly.properties.periods[0];
+      this.forecast.currently.summary = currentPeriod.shortForecast;
+      this.forecast.currently.temperature = currentPeriod.temperature;
+    }
+    
+    // Process data for Nunjucks template
+    this.formattedWeatherData = this.processWeatherData();
+
+    this.loaded = true;
+    this.updateDom(this.config.animationSpeed);
+  },
+
+  processWeatherData: function() {
+    const periodsHourly = this.forecast.hourly.properties.periods;
+    const periodsDaily = this.forecast.daily.properties.periods;
+    
+    const hourlyForecast = periodsHourly.slice(0, this.config.maxHourly).map(p => ({
+        time: moment(p.startTime).format(this.config.label_hourlyTimeFormat),
+        temperature: p.temperature,
+        summary: p.shortForecast,
+        icon: this.getSkycon(p.shortForecast),
+    }));
+
+    const dailyForecast = periodsDaily.slice(0, this.config.maxDays).map(p => ({
+        day: moment(p.startTime).format(this.config.label_dailyTimeFormat),
+        high: p.temperature,
+        low: p.temperature, // NOAA API doesn't provide a separate low temp in the daily forecast
+        summary: p.shortForecast,
+        icon: this.getSkycon(p.shortForecast),
+    }));
+    
+    // NOAA daily forecast provides only one temperature (high). We can
+    // attempt to get the low from the next night's forecast.
+    if (periodsDaily.length > 1) {
+      for (let i = 0; i < dailyForecast.length; i++) {
+        if (i + 1 < periodsDaily.length) {
+          dailyForecast[i].low = periodsDaily[i+1].temperature;
+        }
+      }
+    }
+
+
+    return {
+      currently: {
+        temperature: this.config.showFeelsLikeTemp ? this.getFeelsLikeTemp() : this.forecast.currently.temperature,
+        summary: this.forecast.currently.summary,
+        icon: this.getSkycon(this.forecast.currently.summary)
+      },
+      hourly: hourlyForecast,
+      daily: dailyForecast
+    };
+  },
+  
+  // A helper function to get the "feels like" temperature.
+  // The NOAA API provides Heat Index and Apparent Temperature,
+  // which can be used to approximate this.
+  getFeelsLikeTemp: function() {
+    const gridData = this.forecast.grid.properties;
+    if (gridData.heatIndex && gridData.heatIndex.values.length > 0) {
+        return gridData.heatIndex.values[0].value;
+    }
+    if (gridData.apparentTemperature && gridData.apparentTemperature.values.length > 0) {
+        return gridData.apparentTemperature.values[0].value;
+    }
+    return this.forecast.currently.temperature;
+  },
+
+  socketNotificationReceived: function (notification, payload) {
+    Log.debug("[MMM-NOAAWeatherForecast] received socket notification", notification, payload);
+    if (notification === "NOAA_CALL_FORECAST_DATA" && payload.instanceId === this.instanceId) {
+      Log.info("[MMM-NOAAWeatherForecast] Received new forecast data from node_helper.");
+      
+      let dataToProcess;
+      // Check if the payload is a string and needs parsing
+      if (typeof payload.payload === 'string') {
+          try {
+              dataToProcess = JSON.parse(payload.payload);
+              Log.info("[MMM-NOAAWeatherForecast] Successfully parsed string payload.");
+          } catch (e) {
+              Log.error("[MMM-NOAAWeatherForecast] Failed to parse payload string:", e);
+              return;
+          }
+      } else {
+          dataToProcess = payload.payload;
+          Log.info("[MMM-NOAAWeatherForecast] Received object payload.");
+      }
+      
+      this.processForecast(dataToProcess);
+    }
+  },
+
+  scheduleUpdate: function (delay) {
+    var nextUpdate = this.config.updateInterval;
+    if (typeof delay !== "undefined" && delay >= 0) {
+      nextUpdate = delay;
+    }
+
+    var self = this;
+    setTimeout(function () {
+      self.getForecast();
+    }, nextUpdate);
+  },
+
+  // The addIcon and playIcons functions and all other utility functions
+  // remain unchanged, as they are not tied to the data source.
+  addIcon: function (icon, isMainIcon) {
+    Log.debug(`Adding icon: ${icon}, ${isMainIcon}`);
+    let iconId = "skycon_main";
+    if (!isMainIcon) {
+      iconId = `skycon_${this.iconCache.length}`;
+    }
+    this.iconCache.push({
+      id: iconId,
+      icon
+    });
+    return iconId;
+  },
+
+  playIcons: function (inst) {
+    inst.iconCache.forEach((icon) => {
+      Log.debug(`Adding animated icon ${icon.id}: '${icon.icon}'`);
+      inst.skycons.add(icon.id, icon.icon);
+    });
+    inst.skycons.play();
+  },
+
+  getSkycon: function(forecast) {
+    forecast = forecast.toLowerCase();
+    if (forecast.includes("snow") || forecast.includes("flurries")) return "snow";
+    if (forecast.includes("sleet") || forecast.includes("ice pellets")) return "sleet";
+    if (forecast.includes("windy")) return "wind";
+    if (forecast.includes("foggy")) return "fog";
+    if (forecast.includes("cloudy")) return "cloudy";
+    if (forecast.includes("partly cloudy") || forecast.includes("mostly cloudy")) return "partly-cloudy";
+    if (forecast.includes("clear")) return "clear-day"; // or "clear-night" depending on isDaytime property
+    if (forecast.includes("sunny")) return "clear-day";
+    if (forecast.includes("rain") || forecast.includes("showers") || forecast.includes("drizzle")) return "rain";
+    return "cloudy"; // Default icon
   },
 
   sanitizeNumbers: function (keys) {
@@ -273,32 +337,4 @@ Module.register("MMM-NOAAWeatherForecast", {
     this.suspended = false;
     this.scheduleUpdate(0);
   },
-  
-  /**
-   * Helper method to render a Nunjucks template.
-   * This is a non-standard method for MagicMirror modules but is used
-   * in the original MMM-OpenWeatherForecast module to separate HTML from JS.
-   */
-  render: function (template, data) {
-    if (typeof nunjucks === "undefined") {
-      Log.error("[MMM-NOAAWeatherForecast] Nunjucks not loaded.");
-      return document.createTextNode("");
-    }
-    const html = nunjucks.render(template, data);
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = html;
-    return wrapper;
-  },
-
-  /*
-   *For use with the Skycons animated icon set. Once the
-   *DOM is updated, the icons are built and set to animate.
-   */
-  playIcons: function (inst) {
-    inst.iconCache.forEach((icon) => {
-      Log.debug(`[MMM-NOAAWeatherForecast] Adding animated icon ${icon.id}: '${icon.icon}'`);
-      inst.skycons.add(icon.id, icon.icon);
-    });
-    inst.skycons.play();
-  }
 });
