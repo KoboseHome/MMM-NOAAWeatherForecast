@@ -46,271 +46,181 @@
 Module.register("MMM-NOAAWeatherForecast", {
 
   requiresVersion: "2.2.0",
+
   defaults: {
     debug: false,
-    latitude: null, // REQUIRED
-    longitude: null, // REQUIRED
-    units: config.units,
+    apiBase: "https://api.weather.gov/points/",
+    units: "imperial",
     language: config.language,
-    iconset: "1",
-    animationSpeed: 1000,
+    latitude: null,
+    longitude: null,
+    forecastType: "daily",
     updateInterval: 10 * 60 * 1000, // 10 minutes
-    retryDelay: 2500,
-    showSummary: true,
-    forecastHeaderText: "",
-    showForecastTableColumnHeaderIcons: true,
+    animationSpeed: 2 * 1000,
+    timeFormat: 12,
+    showForecastRow: true,
     showHourlyForecast: true,
-    hourlyForecastInterval: 3,
-    maxHourliesToShow: 3,
-    hourlyExtras: "precipitation,wind",
+    showExtendedForecast: true,
+    showSummary: true,
     showDailyForecast: true,
-    maxDailiesToShow: 3,
-    dailyExtras: "precipitation,wind",
-    showExtraCurrentConditions: true,
-    extraCurrentConditions: "high/low,wind,uvIndex,precipitation,feelsLike,sunrise/sunset",
-    showFeelsLikeTemp: false,
-    showPrecipitation: true,
-    showWind: true,
-    showCurrentConditions: true,
-    label_maximum: "max",
-    label_high: "High",
-    label_low: "Low",
-    label_wind: "Wind",
-    label_gusts: "gusts",
-    label_feels_like: "Feels like",
-    label_daily_forecast: "Daily",
-    label_hourly_forecast: "Hourly",
-    label_sunrise: "Sunrise",
-    label_sunset: "Sunset",
-    label_precipitation: "Precip",
-    label_uv_index: "UV",
-    label_uv_index_value: "UV Index",
-    label_current_conditions: "Current",
-    tableClass: "small",
-    iconSize: 1, // 0.5 - 1.5,
-    useWeatherIcons: false, // If true, use the OpenWeatherMap built-in icon classes (not recommended)
-    decimalSymbol: ".",
+    useSkycons: true,
+    showIcons: true,
+    iconSet: "1",
     fade: true,
-    fadePoint: 0.25, // Start on 1/4th of the list.
-    apiBaseURL: null, // No longer used, but kept for backward compatibility with older config files
-    appid: null, // No longer used, but kept for backward compatibility with older config files
-    concise: true,
-    animateMainIconOnly: true
+    fadePoint: 0.25,
+    maxDays: 5,
+    maxHourly: 24,
+    showMinimumGrid: false,
+    showPrecipitationGrid: true,
+    showDewpointGrid: false,
+    showWindSpeedGrid: true,
+    showWindDirectionGrid: true,
+    showCloudCoverGrid: true,
+    showRelativeHumidityGrid: true,
+    showVisibilityGrid: false,
+    showHeatIndexGrid: false,
+    showApparentTemperatureGrid: true,
+    showProbabilityOfPrecipitation: true,
+    showTemperatures: true,
+    showWindSpeed: true,
+    showWindDirection: true,
+    showSunrise: true,
+    showSunset: true,
+    showCurrentConditions: true,
   },
 
   getScripts: function () {
-    return ["moment.js", "skycons.js"];
+    return [
+      "moment.js",
+      this.file("node_modules/moment-timezone/builds/moment-timezone-with-data-2012-2022.min.js"),
+      "https://cdnjs.cloudflare.com/ajax/libs/skycons/1396650462/skycons.js",
+    ];
   },
 
   getStyles: function () {
-    return ["font-awesome.css", "MMM-NOAAWeatherForecast.css"];
-  },
-
-  getTemplate: function () {
-    return "mmm-NOAA-forecast.njk";
-  },
-
-  getTemplateData: function () {
-    return this.forecast;
-  },
-
-  /*
-   * For the Skycons animated icon set.
-   * This mapping is a custom conversion from NOAA's icon codes
-   * to the Skycons names.
-   */
-  skyconIconTable: {
-    "skc": "clear-day",
-    "few": "partly-cloudy-day",
-    "sct": "partly-cloudy-day",
-    "bkn": "cloudy",
-    "ovc": "cloudy",
-    "wind_skc": "wind",
-    "wind_few": "wind",
-    "wind_sct": "wind",
-    "wind_bkn": "wind",
-    "wind_ovc": "wind",
-    "snow": "snow",
-    "blizzard": "snow",
-    "rain_snow": "rain-snow",
-    "rain_sleet": "sleet",
-    "snow_sleet": "snow-sleet",
-    "fzra": "sleet",
-    "rain": "rain",
-    "heavy_rain": "rain",
-    "rain_showers": "rain",
-    "tstorm": "thunder",
-    "tstorm_rain": "thunder",
-    "tstorm_hail": "hail",
-    "hail": "hail",
-    "sleet": "sleet",
-    "fog": "fog",
-    "haze": "fog",
-    "dust": "fog",
-    "smoke": "fog",
-    "tornado": "wind",
-    "squall": "wind",
-    "tropical_storm": "wind",
-    "hurricane": "wind"
-  },
-
-  /*
-   * For the weather-icons font
-   */
-  weatherIconTable: {
-    "skc": "day-sunny",
-    "few": "day-cloudy",
-    "sct": "day-cloudy",
-    "bkn": "cloudy",
-    "ovc": "cloudy",
-    "wind_skc": "day-sunny-windy",
-    "wind_few": "day-cloudy-windy",
-    "wind_sct": "day-cloudy-windy",
-    "wind_bkn": "cloudy-windy",
-    "wind_ovc": "cloudy-windy",
-    "snow": "snow",
-    "blizzard": "snow-wind",
-    "rain_snow": "rain-mix",
-    "rain_sleet": "rain-mix",
-    "snow_sleet": "rain-mix",
-    "fzra": "sleet",
-    "rain": "rain",
-    "heavy_rain": "rain",
-    "rain_showers": "showers",
-    "tstorm": "thunderstorm",
-    "tstorm_rain": "thunderstorm",
-    "tstorm_hail": "hail",
-    "hail": "hail",
-    "sleet": "sleet",
-    "fog": "fog",
-    "haze": "day-haze",
-    "dust": "dust",
-    "smoke": "smoke",
-    "tornado": "tornado",
-    "squall": "cloudy-gusts",
-    "tropical_storm": "storm-showers",
-    "hurricane": "hurricane"
+    return [
+      "MMM-NOAAWeatherForecast.css",
+      "font-awesome.css",
+    ];
   },
 
   start: function () {
+    Log.info(`Starting module: ${this.name}`);
     this.forecast = {};
-    this.forecast.loaded = false;
-    this.iconCache = [];
+    this.forecast.currently = {};
+    this.forecast.daily = {};
+    this.forecast.hourly = {};
+    this.loaded = false;
+    this.instanceId = moment().unix();
+    this.getForecast();
+    if (this.config.useSkycons) {
+      this.skycons = new Skycons({ color: "white" });
+    }
+    this.scheduleUpdate();
+  },
+
+  getDom: function () {
+    var wrapper = document.createElement("div");
+    wrapper.className = "weather-forecast-wrapper";
+
+    if (!this.loaded) {
+      wrapper.innerHTML = "LOADING...";
+      wrapper.className = "dimmed light small";
+      return wrapper;
+    }
+
+    // Main weather display
+    if (this.config.showCurrentConditions) {
+      var currentConditions = document.createElement("div");
+      currentConditions.className = "current-conditions";
+      var summary = document.createElement("div");
+      summary.className = "summary";
+      summary.innerHTML = this.forecast.currently.summary;
+      currentConditions.appendChild(summary);
+
+      var temperature = document.createElement("div");
+      temperature.className = "temperature";
+      temperature.innerHTML = `${this.forecast.currently.temperature}°`;
+      currentConditions.appendChild(temperature);
+
+      wrapper.appendChild(currentConditions);
+    }
+
+    return wrapper;
+  },
+
+  getForecast: function () {
+    Log.info(`[MMM-NOAAWeatherForecast] Getting forecast for instance: ${this.instanceId}`);
     this.sendSocketNotification("NOAA_CALL_FORECAST_GET", {
+      instanceId: this.instanceId,
       latitude: this.config.latitude,
       longitude: this.config.longitude,
-      instanceId: this.identifier,
+      units: this.config.units,
+      language: this.config.language,
     });
   },
 
-  socketNotificationReceived: function (notification, payload) {
-    if (notification === "NOAA_CALL_FORECAST_DATA" && payload.instanceId === this.identifier) {
-      Log.log(`[MMM-NOAAWeatherForecast] Received weather data.`);
-      this.processWeather(payload.payload);
+  processForecast: function (data) {
+    if (!data || !data.hourly || !data.daily || !data.grid) {
+      Log.error("[MMM-NOAAWeatherForecast] Invalid data received from node_helper. Missing 'hourly', 'daily', or 'grid' properties.");
       this.updateDom(this.config.animationSpeed);
+      return;
+    }
+
+    this.forecast.hourly = data.hourly;
+    this.forecast.daily = data.daily;
+    this.forecast.grid = data.grid;
+
+    // Set 'currently' from the first hourly period
+    if (this.forecast.hourly.properties.periods.length > 0) {
+      const currentPeriod = this.forecast.hourly.properties.periods[0];
+      this.forecast.currently.summary = currentPeriod.shortForecast;
+      this.forecast.currently.temperature = currentPeriod.temperature;
+    }
+
+    this.loaded = true;
+    this.updateDom(this.config.animationSpeed);
+  },
+
+  socketNotificationReceived: function (notification, payload) {
+    Log.debug("[MMM-NOAAWeatherForecast] received socket notification", notification, payload);
+    if (notification === "NOAA_CALL_FORECAST_DATA" && payload.instanceId === this.instanceId) {
+      Log.info("[MMM-NOAAWeatherForecast] Received new forecast data from node_helper.");
+      
+      let dataToProcess;
+      // Check if the payload is a string and needs parsing
+      if (typeof payload.payload === 'string') {
+          try {
+              dataToProcess = JSON.parse(payload.payload);
+              Log.info("[MMM-NOAAWeatherForecast] Successfully parsed string payload.");
+          } catch (e) {
+              Log.error("[MMM-NOAAWeatherForecast] Failed to parse payload string:", e);
+              return;
+          }
+      } else {
+          dataToProcess = payload.payload;
+          Log.info("[MMM-NOAAWeatherForecast] Received object payload.");
+      }
+      
+      this.processForecast(dataToProcess);
     }
   },
 
-  /*
-   * This is the core data processing function. It takes the raw NOAA data
-   * and transforms it into the format the module's template expects.
-   */
-  processWeather: function (data) {
-    Log.log("Processing NOAA data:", data);
-
-    const hourly = data.forecastHourly.properties.periods;
-    const daily = data.forecast.properties.periods;
-    const grid = data.forecastGridData.properties;
-
-    // Daily Forecast
-    const dailyForecast = [];
-    for (let i = 0; i < this.config.maxDailiesToShow * 2 && i < daily.length; i++) {
-      const period = daily[i];
-      const day = {
-        date: moment(period.startTime).format("ddd"),
-        high: period.temperature,
-        low: i % 2 === 0 ? daily[i + 1]?.temperature : period.temperature, // The "daily" forecast is a series of day/night periods.
-        icon: this.getIcon(period.icon, period.isDaytime),
-        summary: period.detailedForecast,
-        precipitation: period.probabilityOfPrecipitation.value,
-        wind: period.windSpeed + " " + period.windDirection
-      };
-      if (period.isDaytime) {
-        dailyForecast.push(day);
-      }
+  scheduleUpdate: function (delay) {
+    var nextUpdate = this.config.updateInterval;
+    if (typeof delay !== "undefined" && delay >= 0) {
+      nextUpdate = delay;
     }
 
-    // Hourly Forecast
-    const hourlyForecast = [];
-    for (let i = 0; i < this.config.maxHourliesToShow; i++) {
-      const period = hourly[i * this.config.hourlyForecastInterval];
-      if (period) {
-        hourlyForecast.push({
-          time: moment(period.startTime).format("h A"),
-          temp: period.temperature,
-          icon: this.getIcon(period.icon, period.isDaytime),
-          precipitation: period.probabilityOfPrecipitation.value,
-          wind: period.windSpeed + " " + period.windDirection
-        });
-      }
-    }
-
-    // Current Conditions
-    const current = hourly[0];
-    const currentConditions = {
-      temp: current.temperature,
-      temp_high: daily[0].temperature,
-      temp_low: daily[1].temperature,
-      summary: daily[0].detailedForecast,
-      feelsLike: current.temperature, // NOAA doesn't provide a separate "feels like"
-      icon: this.getIcon(current.icon, current.isDaytime),
-      wind: current.windSpeed + " " + current.windDirection,
-      humidity: current.relativeHumidity.value,
-      uvIndex: grid.uvIndex.values[0].value,
-      precipitation: current.probabilityOfPrecipitation.value,
-      sunrise: moment(grid.sunrise.values[0].value).unix(),
-      sunset: moment(grid.sunset.values[0].value).unix()
-    };
-
-    // Construct the final data object for the template
-    this.forecast = {
-      loaded: true,
-      current: currentConditions,
-      hourly: hourlyForecast,
-      daily: dailyForecast,
-      config: this.config
-    };
+    var self = this;
+    setTimeout(function () {
+      self.getForecast();
+    }, nextUpdate);
   },
 
-  /*
-   *Converts NOAA icon URL to the correct icon name for the selected icon set.
-   *This is a critical function as it bridges the two different APIs.
-   * 
-   */
-  getIcon: function (iconUrl, isDaytime) {
-    const iconName = iconUrl.split("/").pop().split("?")[0].replace(/\d+/g, "").toLowerCase();
-    Log.log(`Raw icon name: ${iconName}`);
-
-    let iconToUse;
-    if (this.config.iconset === "1") {
-      iconToUse = this.skyconIconTable[iconName] || "clear-day";
-      if (!isDaytime) {
-        iconToUse = iconToUse.replace("day", "night");
-      }
-    } else {
-      iconToUse = this.weatherIconTable[iconName] || "day-sunny";
-      if (!isDaytime) {
-        iconToUse = iconToUse.replace("day-", "night-");
-      }
-    }
-    Log.log(`Mapped icon to: ${iconToUse}`);
-    return iconToUse;
-  },
-
-  // The rest of the original code for adding icons and playing the animation
-  // remains unchanged, as it's not tied to the data source.
+  // The addIcon and playIcons functions and all other utility functions
+  // remain unchanged, as they are not tied to the data source.
   addIcon: function (icon, isMainIcon) {
-    // ... (unchanged code)
     Log.debug(`Adding icon: ${icon}, ${isMainIcon}`);
     let iconId = "skycon_main";
     if (!isMainIcon) {
@@ -321,7 +231,6 @@ Module.register("MMM-NOAAWeatherForecast", {
   },
 
   playIcons: function (inst) {
-    // ... (unchanged code)
     inst.iconCache.forEach((icon) => {
       Log.debug(`Adding animated icon ${icon.id}: '${icon.icon}'`);
       inst.skycons.add(icon.id, icon.icon);
@@ -330,7 +239,6 @@ Module.register("MMM-NOAAWeatherForecast", {
   },
 
   sanitizeNumbers: function (keys) {
-    // ... (unchanged code)
     const self = this;
     keys.forEach((key) => {
       if (!self.config.hasOwnProperty(key)) {
@@ -345,18 +253,14 @@ Module.register("MMM-NOAAWeatherForecast", {
   },
 
   suspend: function () {
-    Log.log(`[MMM-NOAAWeatherForecast] Module suspended.`);
-    // Stop the icon animation
-    if (this.skycons) {
-      this.skycons.pause();
-    }
+    Log.log(`[MMM-NOAAWeatherForecast] Module suspended. Stopping updates.`);
+    this.suspended = true;
+    clearInterval(this.updateTimer);
   },
 
   resume: function () {
-    Log.log(`[MMM-NOAAWeatherForecast] Module resumed.`);
-    // Restart the icon animation
-    if (this.skycons) {
-      this.skycons.play();
-    }
-  }
+    Log.log(`[MMM-NOAAWeatherForecast] Module resumed. Scheduling updates.`);
+    this.suspended = false;
+    this.scheduleUpdate(0);
+  },
 });
