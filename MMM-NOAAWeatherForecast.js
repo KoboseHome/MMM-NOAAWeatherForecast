@@ -87,6 +87,9 @@ Module.register("MMM-NOAAWeatherForecast", {
     showSunrise: true,
     showSunset: true,
     showCurrentConditions: true,
+    showFeelsLikeTemp: false,
+    label_hourlyTimeFormat: "h a",
+    label_dailyTimeFormat: "ddd",
   },
 
   getScripts: function () {
@@ -104,6 +107,20 @@ Module.register("MMM-NOAAWeatherForecast", {
     ];
   },
 
+  getTemplate: function () {
+    return "MMM-NOAAWeatherForecast.njk";
+  },
+
+  getTemplateData: function () {
+    return {
+      loaded: this.loaded,
+      config: this.config,
+      forecast: this.formattedWeatherData,
+      skyconsEnabled: this.config.useSkycons && this.config.showIcons,
+      playIcons: this.playIcons.bind(this),
+    };
+  },
+
   start: function () {
     Log.info(`Starting module: ${this.name}`);
     this.forecast = {};
@@ -118,84 +135,17 @@ Module.register("MMM-NOAAWeatherForecast", {
   },
 
   getDom: function () {
-    var wrapper = document.createElement("div");
-    wrapper.className = "weather-forecast-wrapper";
-    this.iconCache = []; // Clear icon cache on each DOM update
+    const wrapper = document.createElement("div");
 
     if (!this.loaded) {
       wrapper.innerHTML = "LOADING...";
       wrapper.className = "dimmed light small";
       return wrapper;
     }
-
-    // Initialize Skycons only if the library is loaded and the instance hasn't been created yet
-    if (this.config.useSkycons && typeof Skycons !== 'undefined' && !this.skycons) {
-      this.skycons = new Skycons({
-        color: "white"
-      });
-    }
-
-    // Main weather display
-    if (this.config.showCurrentConditions) {
-      var currentConditions = document.createElement("div");
-      currentConditions.className = "current-conditions";
-      var summary = document.createElement("div");
-      summary.className = "summary";
-      summary.innerHTML = this.forecast.currently.summary;
-      currentConditions.appendChild(summary);
-
-      var temperature = document.createElement("div");
-      temperature.className = "temperature";
-      temperature.innerHTML = `${this.forecast.currently.temperature}°`;
-      currentConditions.appendChild(temperature);
-
-      wrapper.appendChild(currentConditions);
-    }
-
-    // Hourly forecast
-    if (this.config.showHourlyForecast && this.forecast.hourly.properties) {
-      const hourlyWrapper = document.createElement("div");
-      hourlyWrapper.className = "hourly-forecast-wrapper";
-
-      const periods = this.forecast.hourly.properties.periods.slice(0, this.config.maxHourly);
-      periods.forEach((period) => {
-        const hourlyItem = document.createElement("div");
-        hourlyItem.className = "hourly-item";
-
-        // Time
-        const time = document.createElement("div");
-        time.className = "time light small";
-        time.innerHTML = moment(period.startTime).format(this.config.timeFormat === 12 ? "h A" : "HH:mm");
-        hourlyItem.appendChild(time);
-
-        // Icon
-        if (this.config.useSkycons && this.config.showIcons) {
-          const canvas = document.createElement("canvas");
-          const iconId = this.addIcon(this.getSkycon(period.shortForecast), false);
-          canvas.id = iconId;
-          canvas.width = "40";
-          canvas.height = "40";
-          hourlyItem.appendChild(canvas);
-        }
-
-        // Temperature
-        const temperature = document.createElement("div");
-        temperature.className = "temperature light small";
-        temperature.innerHTML = `${period.temperature}°`;
-        hourlyItem.appendChild(temperature);
-
-        hourlyWrapper.appendChild(hourlyItem);
-      });
-
-      wrapper.appendChild(hourlyWrapper);
-    }
-
-    // Play icons only if the Skycons instance exists
-    if (this.config.useSkycons && this.skycons) {
-      this.playIcons(this);
-    }
     
-    return wrapper;
+    // The main DOM creation logic is now in the Nunjucks template.
+    // This method is now only responsible for returning the result of the template.
+    return this.render(this.getTemplate(), this.getTemplateData());
   },
 
   getForecast: function () {
@@ -226,9 +176,67 @@ Module.register("MMM-NOAAWeatherForecast", {
       this.forecast.currently.summary = currentPeriod.shortForecast;
       this.forecast.currently.temperature = currentPeriod.temperature;
     }
+    
+    // Process data for Nunjucks template
+    this.formattedWeatherData = this.processWeatherData();
 
     this.loaded = true;
     this.updateDom(this.config.animationSpeed);
+  },
+
+  processWeatherData: function() {
+    const periodsHourly = this.forecast.hourly.properties.periods;
+    const periodsDaily = this.forecast.daily.properties.periods;
+    
+    const hourlyForecast = periodsHourly.slice(0, this.config.maxHourly).map(p => ({
+        time: moment(p.startTime).format(this.config.label_hourlyTimeFormat),
+        temperature: p.temperature,
+        summary: p.shortForecast,
+        icon: this.getSkycon(p.shortForecast),
+    }));
+
+    const dailyForecast = periodsDaily.slice(0, this.config.maxDays).map(p => ({
+        day: moment(p.startTime).format(this.config.label_dailyTimeFormat),
+        high: p.temperature,
+        low: p.temperature, // NOAA API doesn't provide a separate low temp in the daily forecast
+        summary: p.shortForecast,
+        icon: this.getSkycon(p.shortForecast),
+    }));
+    
+    // NOAA daily forecast provides only one temperature (high). We can
+    // attempt to get the low from the next night's forecast.
+    if (periodsDaily.length > 1) {
+      for (let i = 0; i < dailyForecast.length; i++) {
+        if (i + 1 < periodsDaily.length) {
+          dailyForecast[i].low = periodsDaily[i+1].temperature;
+        }
+      }
+    }
+
+
+    return {
+      currently: {
+        temperature: this.config.showFeelsLikeTemp ? this.getFeelsLikeTemp() : this.forecast.currently.temperature,
+        summary: this.forecast.currently.summary,
+        icon: this.getSkycon(this.forecast.currently.summary)
+      },
+      hourly: hourlyForecast,
+      daily: dailyForecast
+    };
+  },
+  
+  // A helper function to get the "feels like" temperature.
+  // The NOAA API provides Heat Index and Apparent Temperature,
+  // which can be used to approximate this.
+  getFeelsLikeTemp: function() {
+    const gridData = this.forecast.grid.properties;
+    if (gridData.heatIndex && gridData.heatIndex.values.length > 0) {
+        return gridData.heatIndex.values[0].value;
+    }
+    if (gridData.apparentTemperature && gridData.apparentTemperature.values.length > 0) {
+        return gridData.apparentTemperature.values[0].value;
+    }
+    return this.forecast.currently.temperature;
   },
 
   socketNotificationReceived: function (notification, payload) {
