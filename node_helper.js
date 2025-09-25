@@ -17,7 +17,7 @@ var moment = require("moment");
 module.exports = NodeHelper.create({
   start: function () {
     console.log(
-      `Starting node_helper for module [${this.name}]`
+      `Starting node_helper for module ${this.name}`
     );
   },
 
