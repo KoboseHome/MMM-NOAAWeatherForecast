@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-/* globals config, moment, Skycons, nunjucks */
+/* globals config, moment, Skycons */
 
 /**
  ********************************
@@ -48,200 +48,201 @@ Module.register("MMM-NOAAWeatherForecast", {
   requiresVersion: "2.2.0",
 
   defaults: {
-    debug: false,
-    apiBase: "https://api.weather.gov/gridpoints/",
-    // Other default values specific to NOAA.
-    // Ensure all required config parameters for your template are here.
-    location: {
-      latitude: 0,
-      longitude: 0,
-      gridId: "",
-      gridX: 0,
-      gridY: 0,
-    },
-    language: "en",
-    showCurrentConditions: true,
-    showSummary: true,
-    showExtraCurrentConditions: true,
-    showHourlyForecast: true,
-    showDailyForecast: true,
-    colored: true,
-    forecastLayout: "vertical",
-    iconset: "3", // default icon set
+    // You should use the weather.gov API which is rate-limited to 50 requests per minute
+    // So updateInterval needs to be at least 1.2 minutes (72 seconds)
+    // to keep you within the limits of the API.
+    // However, it's recommended to use a longer interval since weather forecasts don't change that frequently.
     updateInterval: 10 * 60 * 1000, // 10 minutes
-    retryDelay: 5000,
-    // extra conditions to show, mapping to your template
-    extraCurrentConditions: {
-      highLowTemp: true,
-      sunrise: true,
-      sunset: true,
-      precipitation: true,
-      wind: true,
-      barometricPressure: true,
-      humidity: true,
-      dewPoint: true,
-      uvIndex: true,
-      visibility: true,
+
+    lat: null, // Required. Find with http://www.latlong.net/
+    lon: null, // Required. Find with http://www.latlong.net/
+
+    location: "Location", // The name of the location to display
+    units: "imperial", // "imperial" or "metric"
+    language: "en-us", // "en-us", "es-es", etc.
+    showForecastDays: 5, // The number of days to show a forecast for
+    showHourlyForecast: 24, // The number of hourly forecasts to show
+    showSummary: true, // Show the summary text
+    showIcon: true, // Show the weather icon
+    showTemps: true, // Show high/low temperatures
+    showPrecipitation: true, // Show precipitation probability
+    showWind: true, // Show wind speed and direction
+    showHumidity: true, // Show humidity
+    showSunriseSunset: true, // Show sunrise and sunset times
+    showFeelsLike: false, // Show "feels like" temperature
+    showUVIndex: false, // Show UV index
+
+    // Icon packs. Use one or more of these
+    iconSets: ["skycons", "climacons"],
+
+    // The Skycons animated icon set can be colored
+    skyconColors: {
+      sun: "#fff",
+      moon: "#fff",
+      cloud: "#999",
+      rain: "#00f",
+      sleet: "#66f",
+      snow: "#fff",
+      wind: "#666",
+      fog: "#999"
     },
-    dailyExtras: {
-      precipitation: true,
-      sunrise: true,
-      sunset: true,
-      wind: true,
-      barometricPressure: true,
-      humidity: true,
-      dewPoint: true,
-      uvIndex: true,
-    },
-    hourlyExtras: {
-      precipitation: true,
-      wind: true,
-      barometricPressure: true,
-      humidity: true,
-      dewPoint: true,
-      uvIndex: true,
-      visibility: true,
-    },
+
+    animationSpeed: 1000,
+    debug: false,
+    useHeader: true
   },
 
-  phrases: {
-    loading: "Loading NOAA Weather...",
-    // You can add other phrases here
-  },
-
-  forecast: null,
-  loading: true,
-  skycons: null,
-  iconCache: [],
-  suspended: false,
-
-  start: function () {
-    const self = this;
-    Log.info(`[MMM-NOAAWeatherForecast] Starting module: ${this.name}`);
-    this.updateTimer = null;
-    this.scheduleUpdate(0);
+  getScripts: function () {
+    return [
+      "moment.js",
+      this.file("node_modules/skycons/skycons.js"),
+      "moment-timezone"
+    ];
   },
 
   getStyles: function () {
     return [
-      "MMM-NOAAWeatherForecast.css",
-      `font-awesome.css`,
-      `weather-icons.css`,
+      "weather-icons.css",
+      "font-awesome.css",
+      this.file("style/style.css"),
     ];
   },
 
-  getScripts: function () {
-    const scripts = ["moment.js"];
-
-    if (this.config.iconset === "1") {
-      scripts.push(this.file("skycons.js"));
-    }
-    return scripts;
-  },
-
   getTemplate: function () {
-    // This is the correct method to get the template path.
-    // MagicMirror will automatically look in the module's directory.
-    return "MMM-NOAAWeatherForecast.njk";
+    return "forecast.njk";
   },
 
   getTemplateData: function () {
-    // This method provides the data to the Nunjucks template.
-    return {
-      forecast: this.forecast,
-      config: this.config,
-      loading: this.loading,
-      phrases: this.phrases,
-      animatedIconSizes: {
-        main: this.config.sizeForMainIcon,
-        forecast: this.config.sizeForForecastIcon,
-      },
-      inlineIcons: {
-        // You'll need to define the paths to your inline icons here,
-        // similar to what's in the original OpenWeatherForecast module.
-        sunrise: this.file("icons/inline/sunrise.svg"),
-        sunset: this.file("icons/inline/sunset.svg"),
-        rain: this.file("icons/inline/rain.svg"),
-        wind: this.file("icons/inline/wind.svg"),
-        pressure: this.file("icons/inline/pressure.svg"),
-        humidity: this.file("icons/inline/humidity.svg"),
-        dewPoint: this.file("icons/inline/dewpoint.svg"),
-        uvIndex: this.file("icons/inline/uvindex.svg"),
-        visibility: this.file("icons/inline/visibility.svg"),
-      },
-    };
+    return this.forecast;
   },
 
-  /**
-   * Helper method to render a Nunjucks template.
-   * This is a non-standard method for MagicMirror modules but is used
-   * in the original MMM-OpenWeatherForecast module to separate HTML from JS.
-   * This method is added to resolve the "this.render is not a function" error.
-   */
-  render: function (template, data) {
-    if (typeof nunjucks === "undefined") {
-      Log.error("[MMM-NOAAWeatherForecast] Nunjucks not loaded.");
-      return document.createTextNode("");
+  start: function () {
+    Log.info(`Starting module: ${this.name}`);
+    this.forecast = null;
+    this.loading = true;
+    this.iconCache = [];
+    this.skycons = new Skycons({
+      "monochrome": false
+    });
+    this.skycons.color(this.config.skyconColors);
+    this.sanitizeNumbers(["lat", "lon"]);
+    this.loadForecast();
+  },
+
+  loadForecast: function () {
+    if (this.config.debug) {
+      Log.log("[MMM-NOAAWeatherForecast] Loading forecast...");
     }
-    const html = nunjucks.render(template, data);
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = html;
-    return wrapper;
-  },
 
-  getDom: function () {
-    // This is the standard way to render the template.
-    // It calls getTemplate and getTemplateData for you.
-    return this.render(this.getTemplate(), this.getTemplateData());
-  },
-
-  scheduleUpdate: function (delay) {
-    const self = this;
-    let nextLoad = this.config.updateInterval;
-    if (typeof delay !== "undefined" && delay >= 0) {
-      nextLoad = delay;
-    }
-    Log.info(`[MMM-NOAAWeatherForecast] Weather update scheduled for ${moment().add(nextLoad, 'milliseconds').fromNow()}`);
-    this.updateTimer = setTimeout(() => {
-      self.sendSocketNotification("FETCH_WEATHER", self.config);
-    }, nextLoad);
+    const apiUrl = `https://api.weather.gov/points/${this.config.lat},${this.config.lon}`;
+    this.sendSocketNotification("FETCH_FORECAST", {
+      apiUrl: apiUrl,
+      lat: this.config.lat,
+      lon: this.config.lon,
+    });
   },
 
   socketNotificationReceived: function (notification, payload) {
-    Log.info(`[MMM-NOAAWeatherForecast] Socket notification received: ${notification}`);
-    if (notification === "WEATHER_DATA") {
-      if (payload.loading !== undefined) {
-        this.loading = payload.loading;
+    if (this.config.debug) {
+      Log.log(`[MMM-NOAAWeatherForecast] Received notification: ${notification}`);
+    }
+
+    if (notification === "FORECAST_DATA") {
+      if (this.config.debug) {
+        Log.log("[MMM-NOAAWeatherForecast] Got forecast data:", payload);
       }
-      if (payload.forecast) {
-        this.forecast = payload.forecast;
-        this.loading = false;
-        if (this.config.iconset === "1") {
-          // You'll need to handle the Skycons logic here
-          // to add the icons to your iconCache.
-          // This should be done in the node_helper.js and passed back.
-        }
-      }
-      this.updateDom(1000);
-      this.scheduleUpdate();
+      this.forecast = payload;
+      this.loading = false;
+      this.updateDom(this.config.animationSpeed);
+    } else if (notification === "FORECAST_ERROR") {
+      this.loading = false;
+      this.updateDom(this.config.animationSpeed);
+      Log.error("[MMM-NOAAWeatherForecast] Forecast error:", payload);
     }
   },
 
-  notificationReceived: function (notification, payload) {
-    // This is a placeholder, you can add logic here if you need to
-    // listen for other module's notifications.
+  getDom: function () {
+    if (this.loading) {
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = "LOADING FORECAST...";
+      wrapper.className = "dimmed light small";
+      return wrapper;
+    }
+
+    if (!this.forecast) {
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = "FORECAST DATA NOT AVAILABLE";
+      wrapper.className = "dimmed light small";
+      return wrapper;
+    }
+
+    this.forecast.forecasts.forEach(forecast => {
+      // Add icon to cache for Skycons
+      if (this.config.iconSets.includes("skycons")) {
+        const iconId = `skycon_${forecast.timestamp}`;
+        this.iconCache.push({ id: iconId, icon: this.getSkycon(forecast.icon) });
+      }
+    });
+
+    this.forecast.hourlyForecasts.forEach(hourly => {
+      // Add icon to cache for Skycons
+      if (this.config.iconSets.includes("skycons")) {
+        const iconId = `skycon_hourly_${hourly.timestamp}`;
+        this.iconCache.push({ id: iconId, icon: this.getSkycon(hourly.icon) });
+      }
+    });
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = this.render(this.getTemplate(), this.getTemplateData());
+
+    // Play icons after DOM is updated
+    this.playIcons(this);
+
+    return wrapper;
   },
 
-  // Helper method to convert weather conditions to a skycon icon ID
-  // You can adapt this to your NOAA data structure.
-  getSkycon: function (condition) {
-    // Implement your logic to map NOAA conditions to Skycons IDs
-    // This is just a placeholder example
-    switch (condition) {
+  // Helper function to return the correct Skycon icon name
+  getSkycon: function (icon) {
+    const iconName = icon.split("/").pop().split(",")[0];
+    switch (iconName) {
+      case "skc":
+        return "clear-day";
+      case "few":
+        return "partly-cloudy-day";
+      case "sct":
+      case "bkn":
+        return "cloudy";
+      case "ovc":
+        return "cloudy";
+      case "wind_skc":
+      case "wind_few":
+      case "wind_sct":
+      case "wind_bkn":
+      case "wind_ovc":
+        return "wind";
+      case "rain_showers":
+      case "rain_showers_hi":
+        return "rain";
+      case "isolated_showers":
+        return "rain";
+      case "sct_showers":
+        return "rain";
       case "rain":
         return "rain";
-      case "cloudy":
-        return "cloudy";
+      case "tornado":
+        return "tornado";
+      case "snow":
+      case "snow_fzra":
+      case "wintry_mix":
+        return "snow";
+      case "sleet":
+        return "sleet";
+      case "fog":
+        return "fog";
+      case "tsra":
+      case "tsra_sct":
+      case "tsra_hi":
+        return "thunderstorms";
       default:
         return "cloudy"; // Default icon
     }
@@ -272,5 +273,32 @@ Module.register("MMM-NOAAWeatherForecast", {
     this.suspended = false;
     this.scheduleUpdate(0);
   },
+  
+  /**
+   * Helper method to render a Nunjucks template.
+   * This is a non-standard method for MagicMirror modules but is used
+   * in the original MMM-OpenWeatherForecast module to separate HTML from JS.
+   */
+  render: function (template, data) {
+    if (typeof nunjucks === "undefined") {
+      Log.error("[MMM-NOAAWeatherForecast] Nunjucks not loaded.");
+      return document.createTextNode("");
+    }
+    const html = nunjucks.render(template, data);
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html;
+    return wrapper;
+  },
 
+  /*
+   *For use with the Skycons animated icon set. Once the
+   *DOM is updated, the icons are built and set to animate.
+   */
+  playIcons: function (inst) {
+    inst.iconCache.forEach((icon) => {
+      Log.debug(`[MMM-NOAAWeatherForecast] Adding animated icon ${icon.id}: '${icon.icon}'`);
+      inst.skycons.add(icon.id, icon.icon);
+    });
+    inst.skycons.play();
+  }
 });
