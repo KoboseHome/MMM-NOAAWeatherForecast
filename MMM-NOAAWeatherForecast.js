@@ -107,7 +107,7 @@ Module.register("MMM-NOAAWeatherForecast", {
   },
 
   getTemplate: function () {
-    return "MMM-NOAAWeatherForecast.njk";
+    return "MMM-NOAA-Forecast.njk";
   },
 
   getTemplateData: function () {
