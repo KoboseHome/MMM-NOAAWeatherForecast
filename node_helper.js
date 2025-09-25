@@ -1,76 +1,72 @@
-/**
- ********************************
- *
- *Node Helper for MMM-OpenWeatherForecast.
- *
- *This helper is responsible for the data pull from OpenWeather's
- *One Call API. At a minimum the API key, Latitude and Longitude
- *parameters must be provided.  If any of these are missing, the
- *request to OpenWeather will not be executed, and instead an error
- *will be output the the MagicMirror log.
- *
- *Additional, this module supplies two optional parameters:
- *
- *  units - one of "standard", "metric" or "imperial"
- *  lang - Any of the languages OpenWeather supports, as listed here: https://openweathermap.org/api/one-call-api#multi
- *
- *The OpenWeather OneCall API request looks like this:
- *
- *  https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude=minutely&appid={API key}&units={units}&lang={lang}
- *
- ********************************
- */
+/*
 
-const Log = require("logger");
-const NodeHelper = require("node_helper");
-const moment = require("moment");
+Node Helper for MMM-NOAAForecast.
+This helper is responsible for the DarkSky-compatible data pull from NOAA.
+Sample API:e.g. https://api.weather.gov/points/40.8932469,-74.0116536
 
-module.exports = NodeHelper.create({
+*/
+  const NodeHelper = require("node_helper");const needle = require("needle");const moment = require("moment");const Log = require("logger");module.exports = NodeHelper.create({ start: function () { Log.log( Starting node_helper for module [${this.name}] ); },async socketNotificationReceived(notification, payload) {if (notification === "NOAA_CALL_FORECAST_GET") {// Modern Node.js best practice: Use async/await for cleaner, more readable code.// It avoids "callback hell" and simplifies error handling with try/catch blocks.// This is a major improvement from the older callback-based approach.try {if (!payload.latitude ||!payload.longitude) {Log.error([MMM-NOAAForecast] ${moment().format( "D-MMM-YY HH:mm" )} ** ERROR ** Latitude and/or longitude not provided.);return;}    const pointsUrl = `https://api.weather.gov/points/${payload.latitude},${payload.longitude}`;
 
-  start () {
-    Log.log(`Starting node_helper for: ${this.name}`);
-  },
+    // A User-Agent header is required by the NOAA API. This is a critical addition.
+    const needleOptions = {
+      follow_max: 3,
+      headers: {
+        "User-Agent": "(MagicMirror, https://github.com/yourusername/MMM-NOAAForecast)",
+      },
+    };
 
-  async socketNotificationReceived (notification, payload) {
-    if (notification === "OPENWEATHER_FORECAST_GET") {
-      if (payload.apikey === null || payload.apikey === "") {
-        Log.error(`[MMM-OpenWeatherForecast] ${moment().format("D-MMM-YY HH:mm")} ** ERROR ** No API key configured. Get an API key at https://openweathermap.org/`);
-      } else if (payload.latitude === null || payload.latitude === "" || payload.longitude === null || payload.longitude === "") {
-        Log.error(`[MMM-OpenWeatherForecast] ${moment().format("D-MMM-YY HH:mm")} ** ERROR ** Latitude and/or longitude not provided.`);
-      } else {
-        // make request to OpenWeather One Call API
-        const url = `${payload.apiBaseURL
-        }lat=${payload.latitude
-        }&lon=${payload.longitude
-        }&exclude=minutely` +
-        `&appid=${payload.apikey
-        }&units=${payload.units
-        }&lang=${payload.language}`;
+    Log.log(`[MMM-NOAAForecast] Getting data from points URL: ${pointsUrl}`);
 
-        if (typeof this.config !== "undefined") {
-          Log.debug(`[MMM-OpenWeatherForecast] Fetching url: ${url}`);
-        }
+    const pointsResponse = await needle("get", pointsUrl, needleOptions);
 
-        try {
-          const response = await fetch(url);
-
-          if (response.status !== 200) {
-            Log.error(`[MMM-OpenWeatherForecast] API response error: ${response.status} ${response.statusText}`);
-            return;
-          }
-
-          const data = await response.json();
-
-          if (typeof data !== "undefined") {
-            data.instanceId = payload.instanceId;
-            this.sendSocketNotification("OPENWEATHER_FORECAST_DATA", data);
-          }
-        } catch (error) {
-          Log.error(`[MMM-OpenWeatherForecast] ${moment().format("D-MMM-YY HH:mm")} ** ERROR ** ${error}\n${error.stack}`);
-        }
-      }
-    } else if (notification === "CONFIG") {
-      this.config = payload;
+    if (pointsResponse.statusCode !== 200) {
+      throw new Error(
+        `Failed to get points data: ${pointsResponse.statusCode} ${pointsResponse.statusMessage}`
+      );
     }
+
+    const pointsBody = pointsResponse.body;
+    const forecastUrls = [
+      { key: "forecast", url: pointsBody.properties.forecast },
+      { key: "forecastHourly", url: pointsBody.properties.forecastHourly },
+      { key: "forecastGridData", url: pointsBody.properties.forecastGridData },
+    ];
+
+    // Using Promise.all is a more efficient and reliable way to handle multiple
+    // concurrent asynchronous requests compared to a counter. It waits for all
+    // requests to complete successfully or for the first one to fail.
+    const forecastPromises = forecastUrls.map(async (item) => {
+      Log.log(`[MMM-NOAAForecast] Getting data from forecast URL: ${item.url}`);
+      const response = await needle("get", item.url, needleOptions);
+      if (response.statusCode !== 200) {
+        throw new Error(
+          `Failed to get ${item.key} data: ${response.statusCode} ${response.statusMessage}`
+        );
+      }
+      return { key: item.key, data: response.body };
+    });
+
+    const results = await Promise.all(forecastPromises);
+    const forecastData = {};
+    results.forEach(result => {
+      forecastData[result.key] = result.data;
+    });
+
+    // Use Log.log and Log.error for better integration with MagicMirror's logging system.
+    Log.log(`[MMM-NOAAForecast] Successfully fetched all forecast data.`);
+
+    this.sendSocketNotification("NOAA_CALL_FORECAST_DATA", {
+      instanceId: payload.instanceId,
+      payload: forecastData,
+    });
+
+  } catch (error) {
+    // Centralized error handling for all API calls.
+    Log.error(
+      `[MMM-NOAAForecast] ${moment().format(
+        "D-MMM-YY HH:mm"
+      )} ** ERROR ** ${error.message}`
+    );
   }
-});
+}
+},});
