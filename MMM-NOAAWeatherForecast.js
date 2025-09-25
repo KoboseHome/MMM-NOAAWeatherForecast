@@ -114,7 +114,6 @@ Module.register("MMM-NOAAWeatherForecast", {
     this.loaded = false;
     this.instanceId = moment().unix();
     this.getForecast();
-    // The Skycons initialization has been moved to getDom()
     this.scheduleUpdate();
   },
 
@@ -129,8 +128,8 @@ Module.register("MMM-NOAAWeatherForecast", {
       return wrapper;
     }
 
-    // Initialize Skycons only once
-    if (this.config.useSkycons && !this.skycons) {
+    // Initialize Skycons only if the library is loaded and the instance hasn't been created yet
+    if (this.config.useSkycons && typeof Skycons !== 'undefined' && !this.skycons) {
       this.skycons = new Skycons({
         color: "white"
       });
@@ -191,8 +190,8 @@ Module.register("MMM-NOAAWeatherForecast", {
       wrapper.appendChild(hourlyWrapper);
     }
 
-    // Play icons after all elements have been added to the DOM
-    if (this.config.useSkycons) {
+    // Play icons only if the Skycons instance exists
+    if (this.config.useSkycons && this.skycons) {
       this.playIcons(this);
     }
     
