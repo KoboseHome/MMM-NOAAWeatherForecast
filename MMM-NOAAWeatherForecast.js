@@ -118,6 +118,11 @@ Module.register("MMM-NOAAWeatherForecast", {
       forecast: this.formattedWeatherData,
       skyconsEnabled: this.config.useSkycons && this.config.showIcons,
       playIcons: this.playIcons.bind(this),
+      // The new template expects a summary, we'll use the current summary
+      summary: this.formattedWeatherData && this.formattedWeatherData.currently.summary,
+      // The new template expects a separate hourly and daily forecast
+      hourlyForecast: this.formattedWeatherData && this.formattedWeatherData.hourly,
+      dailyForecast: this.formattedWeatherData && this.formattedWeatherData.daily,
     };
   },
 
@@ -336,5 +341,22 @@ Module.register("MMM-NOAAWeatherForecast", {
     Log.log(`[MMM-NOAAWeatherForecast] Module resumed. Scheduling updates.`);
     this.suspended = false;
     this.scheduleUpdate(0);
+  },
+  
+  /**
+   * Helper method to render a Nunjucks template.
+   * This is a non-standard method for MagicMirror modules but is used
+   * in the original MMM-OpenWeatherForecast module to separate HTML from JS.
+   * This method is added to resolve the "this.render is not a function" error.
+   */
+  render: function (template, data) {
+    if (typeof nunjucks === "undefined") {
+      Log.error("[MMM-NOAAWeatherForecast] Nunjucks not loaded.");
+      return document.createTextNode("");
+    }
+    const html = nunjucks.render(template, data);
+    const element = document.createElement("div");
+    element.innerHTML = html;
+    return element.firstChild;
   },
 });
