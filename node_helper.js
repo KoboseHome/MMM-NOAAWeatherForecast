@@ -45,22 +45,34 @@ module.exports = NodeHelper.create({
 
         console.log(`[MMM-NOAAWeatherForecast] Getting data: ${url}`);
         needle.get(url, needleOptions, function (error, response, body) {
+          let parsedBody;
+          try {
+            parsedBody = JSON.parse(body);
+          } catch (e) {
+            console.log(
+              `[MMM-NOAAWeatherForecast] ${moment().format(
+                "D-MMM-YY HH:mm"
+              )} ** ERROR ** Failed to parse response body as JSON: ${e.message}`
+            );
+            return;
+          }
+
           if (
             !error &&
             response.statusCode === 200 &&
-            body &&
-            body.properties &&
-            body.properties.forecastHourly
+            parsedBody &&
+            parsedBody.properties &&
+            parsedBody.properties.forecastHourly
           ) {
               var forecastUrls = [{
                 key: "hourly",
-                url: body.properties.forecastHourly
+                url: parsedBody.properties.forecastHourly
               }, {
                 key: "daily",
-                url: body.properties.forecast
+                url: parsedBody.properties.forecast
               }, {
                 key: "grid",
-                url: body.properties.forecastGridData
+                url: parsedBody.properties.forecastGridData
               }];
 
               var forecastData = {};
@@ -90,13 +102,12 @@ module.exports = NodeHelper.create({
             } else {
               let errorMessage = error ? error : "Unknown API error";
               try {
-                // If there's no error object, try to parse the body for a message.
+                // If there's no error object, try to stringify the parsed body for a message.
                 if (!error) {
-                  var parsedBody = JSON.parse(body);
                   errorMessage = JSON.stringify(parsedBody);
                 }
               } catch (e) {
-                // If parsing fails, stick with the default error message.
+                // If stringifying fails, stick with the default error message.
               }
               console.log(
                 `[MMM-NOAAWeatherForecast] ${moment().format(
