@@ -5,8 +5,8 @@
  ********************************
  *
  *MagicMirror² Module:
- *MMM-NOAAForecast
- *https://github.com/yourusername/MMM-NOAAForecast
+ *MMM-NOAAWeatherForecast
+ *https://github.com/yourusername/MMM-NOAAWeatherForecast
  *
  *Icons in use by this module:
  *
@@ -43,8 +43,9 @@
  ********************************
  */
 
-Module.register("MMM-NOAAForecast", {
+Module.register("MMM-NOAAWeatherForecast", {
 
+  requiresVersion: "2.2.0",
   defaults: {
     debug: false,
     latitude: null, // REQUIRED
@@ -102,11 +103,11 @@ Module.register("MMM-NOAAForecast", {
   },
 
   getStyles: function () {
-    return ["font-awesome.css", "MMM-NOAAForecast.css"];
+    return ["font-awesome.css", "MMM-NOAAWeatherForecast.css"];
   },
 
   getTemplate: function () {
-    return "MMM-NOAAForecast.njk";
+    return "MMM-NOAAWeatherForecast.njk";
   },
 
   getTemplateData: function () {
@@ -204,7 +205,7 @@ Module.register("MMM-NOAAForecast", {
 
   socketNotificationReceived: function (notification, payload) {
     if (notification === "NOAA_CALL_FORECAST_DATA" && payload.instanceId === this.identifier) {
-      Log.log(`[MMM-NOAAForecast] Received weather data.`);
+      Log.log(`[MMM-NOAAWeatherForecast] Received weather data.`);
       this.processWeather(payload.payload);
       this.updateDom(this.config.animationSpeed);
     }
@@ -338,13 +339,13 @@ Module.register("MMM-NOAAForecast", {
       self.config[key] = parseFloat(self.config[key]);
       if (isNaN(self.config[key])) {
         self.config[key] = self.defaults[key];
-        Log.error(`[MMM-NOAAForecast] ** Invalid number detected for config parameter '${key}'. Using default value: ${self.config[key]}`);
+        Log.error(`[MMM-NOAAWeatherForecast] ** Invalid number detected for config parameter '${key}'. Using default value: ${self.config[key]}`);
       }
     });
   },
 
   suspend: function () {
-    Log.log(`[MMM-NOAAForecast] Module suspended.`);
+    Log.log(`[MMM-NOAAWeatherForecast] Module suspended.`);
     // Stop the icon animation
     if (this.skycons) {
       this.skycons.pause();
@@ -352,7 +353,7 @@ Module.register("MMM-NOAAForecast", {
   },
 
   resume: function () {
-    Log.log(`[MMM-NOAAForecast] Module resumed.`);
+    Log.log(`[MMM-NOAAWeatherForecast] Module resumed.`);
     // Restart the icon animation
     if (this.skycons) {
       this.skycons.play();
