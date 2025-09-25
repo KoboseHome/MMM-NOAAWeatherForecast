@@ -70,7 +70,7 @@ Module.register("MMM-NOAAWeatherForecast", {
     forecastLayout: "tiled",
     horizontalIcons: false, // only works with "tiled" layout
     hourly: {
-      use":"hourly",
+      use:"hourly",
       numHours: 6
     },
     daily: {
@@ -401,28 +401,5 @@ Module.register("MMM-NOAAWeatherForecast", {
       });
       inst.skycons.play();
     }
-  },
-
-  /**
-   * Helper method to render a Nunjucks template.
-   * This is a non-standard method for MagicMirror modules but is used
-   * in the original MMM-OpenWeatherForecast module to separate HTML from JS.
-   * This method is added to resolve the "this.render is not a function" error.
-   */
-  render: function (template, data) {
-    if (typeof nunjucks === "undefined") {
-      Log.error("[MMM-NOAAWeatherForecast] Nunjucks not loaded.");
-      return document.createTextNode("");
-    }
-    const html = nunjucks.render(this.file(template), data);
-    return new DOMParser().parseFromString(html, "text/html").body.firstChild;
-  },
-
-  // The `getDom` method is the one that constructs the HTML.
-  // It is now much simpler because the rendering is handled by the framework.
-  getDom: function () {
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = this.template;
-    return wrapper;
   }
 });
