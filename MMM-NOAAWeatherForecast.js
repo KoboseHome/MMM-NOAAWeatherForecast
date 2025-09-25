@@ -96,63 +96,6 @@ Module.register("MMM-NOAAWeatherForecast", {
     showPrecipitationSeparator: true,
     showPrecipitationAmount: true,
     showPrecipitationProb: true,
-    showPrecipitationAmount: true,
-    showPrecipitationProb: true,
-    relativeColors: false,
-    showCurrentConditions: true,
-    showExtraCurrentConditions: true,
-    showSummary: true,
-    showPrecipitation: true,
-    showWindSpeed: true,
-    showWindDirection: true,
-    showSunriseSunset: true,
-    showFeelsLike: true,
-    showUVIndex: false,
-    showDailyForecast: true,
-    showDailyHeader: true,
-    showDailyIcons: true,
-    showDailyHighLow: true,
-    showDailySummary: true,
-    maxDailiesToShow: 7,
-    ignoreToday: false,
-    showHourlyForecast: false,
-    showHourlyHeader: true,
-    showHourlyIcons: true,
-    showHourlyTemp: true,
-    showHourlyPrecip: true,
-    showHourlyWind: false,
-    showHourlySummary: false,
-    maxHourliesToShow: 3,
-    hourlyForecastInterval: 3 * 60 * 60 * 1000, // 3 hours
-    units: config.units,
-    tempUnits: config.units,
-    windUnits: config.units,
-    timeFormat: config.timeFormat,
-    roundTemp: true,
-    showPrecipitationSeparator: true,
-    showPrecipitationAmount: true,
-    showPrecipitationProb: true,
-  },
-
-  // Define start sequence.
-  start: function () {
-    const self = this;
-    Log.info("Starting module: " + self.name);
-
-    if (self.config.lat === null || self.config.lon === null) {
-      Log.error("[MMM-NOAAWeatherForecast] ** Latitude and longitude are required to fetch data from NOAA. Please add them to your config file.");
-      return;
-    }
-
-    self.weatherData = null;
-    self.skycons = new Skycons({ color: "white" });
-    self.loaded = false;
-    self.suspended = false;
-
-    // Sanitize config numbers
-    self.sanitizeNumbers(["lat", "lon", "updateInterval", "fadeSpeed", "initialLoadDelay", "dayCount"]);
-
-    self.scheduleUpdate(self.config.initialLoadDelay);
   },
 
   getScripts: function () {
@@ -325,54 +268,12 @@ Module.register("MMM-NOAAWeatherForecast", {
     this.scheduleUpdate();
   },
 
-  getData: function () {
-    var self = this;
-    var url = self.config.api_endpoint + self.config.lat + "," + self.config.lon;
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.setRequestHeader("User-Agent", "MagicMirror/1.0"); // NOAA requires a user agent
-    xhr.onreadystatechange = function () {
-      if (this.readyState === 4) {
-        if (this.status === 200) {
-          self.processNOAAForecast(JSON.parse(this.response));
-        } else {
-          Log.error("[MMM-NOAAWeatherForecast] Error fetching data from NOAA. Status:", this.status);
-          self.updateDom();
-        }
-      }
-    };
-    xhr.send();
-  },
-
-  processNOAAForecast: function (data) {
-    const self = this;
-
-    if (!data || !data.properties || !data.properties.forecastHourly || !data.properties.forecast) {
-      Log.error("[MMM-NOAAWeatherForecast] Invalid NOAA data received. Missing forecast properties.");
-      return;
+  socketNotificationReceived: function (notification, payload) {
+    if (notification === "NOAA_WEATHER_DATA") {
+      this.weatherData = payload;
+      this.loaded = true;
+      this.updateDom(this.config.fadeSpeed);
     }
-
-    var forecastUrl = data.properties.forecast;
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", forecastUrl, true);
-    xhr.setRequestHeader("User-Agent", "MagicMirror/1.0");
-    xhr.onreadystatechange = function () {
-      if (this.readyState === 4) {
-        if (this.status === 200) {
-          const forecastData = JSON.parse(this.response);
-          self.weatherData = {
-            dailyForecast: forecastData.properties.periods
-          };
-          self.loaded = true;
-          self.updateDom(self.config.fadeSpeed);
-        } else {
-          Log.error("[MMM-NOAAWeatherForecast] Error fetching forecast from URL. Status:", this.status);
-          self.updateDom();
-        }
-      }
-    };
-    xhr.send();
   },
 
   scheduleUpdate: function (delay) {
@@ -384,7 +285,27 @@ Module.register("MMM-NOAAWeatherForecast", {
 
     clearInterval(self.updateTimer);
     self.updateTimer = setTimeout(function () {
-      self.getData();
+      self.sendSocketNotification("GET_NOAA_WEATHER_DATA", self.config);
     }, nextLoad);
+  },
+  // Define start sequence.
+  start: function () {
+    const self = this;
+    Log.info("Starting module: " + self.name);
+
+    if (self.config.lat === null || self.config.lon === null) {
+      Log.error("[MMM-NOAAWeatherForecast] ** Latitude and longitude are required to fetch data from NOAA. Please add them to your config file.");
+      return;
+    }
+
+    self.weatherData = null;
+    self.skycons = new Skycons({ color: "white" });
+    self.loaded = false;
+    self.suspended = false;
+
+    // Sanitize config numbers
+    self.sanitizeNumbers(["lat", "lon", "updateInterval", "fadeSpeed", "initialLoadDelay", "dayCount"]);
+
+    self.scheduleUpdate(self.config.initialLoadDelay);
   },
 });
