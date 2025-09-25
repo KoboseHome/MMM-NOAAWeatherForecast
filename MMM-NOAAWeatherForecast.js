@@ -110,6 +110,7 @@ Module.register("MMM-NOAAWeatherForecast", {
     this.forecast.currently = {};
     this.forecast.daily = {};
     this.forecast.hourly = {};
+    this.iconCache = [];
     this.loaded = false;
     this.instanceId = moment().unix();
     this.getForecast();
@@ -120,6 +121,7 @@ Module.register("MMM-NOAAWeatherForecast", {
   getDom: function () {
     var wrapper = document.createElement("div");
     wrapper.className = "weather-forecast-wrapper";
+    this.iconCache = []; // Clear icon cache on each DOM update
 
     if (!this.loaded) {
       wrapper.innerHTML = "LOADING...";
@@ -129,9 +131,9 @@ Module.register("MMM-NOAAWeatherForecast", {
 
     // Initialize Skycons only once
     if (this.config.useSkycons && !this.skycons) {
-        this.skycons = new Skycons({ color: "white" });
-        // After Skycons is initialized and the DOM is ready, play the icons
-        this.playIcons(this);
+      this.skycons = new Skycons({
+        color: "white"
+      });
     }
 
     // Main weather display
@@ -151,6 +153,49 @@ Module.register("MMM-NOAAWeatherForecast", {
       wrapper.appendChild(currentConditions);
     }
 
+    // Hourly forecast
+    if (this.config.showHourlyForecast && this.forecast.hourly.properties) {
+      const hourlyWrapper = document.createElement("div");
+      hourlyWrapper.className = "hourly-forecast-wrapper";
+
+      const periods = this.forecast.hourly.properties.periods.slice(0, this.config.maxHourly);
+      periods.forEach((period) => {
+        const hourlyItem = document.createElement("div");
+        hourlyItem.className = "hourly-item";
+
+        // Time
+        const time = document.createElement("div");
+        time.className = "time light small";
+        time.innerHTML = moment(period.startTime).format(this.config.timeFormat === 12 ? "h A" : "HH:mm");
+        hourlyItem.appendChild(time);
+
+        // Icon
+        if (this.config.useSkycons && this.config.showIcons) {
+          const canvas = document.createElement("canvas");
+          const iconId = this.addIcon(this.getSkycon(period.shortForecast), false);
+          canvas.id = iconId;
+          canvas.width = "40";
+          canvas.height = "40";
+          hourlyItem.appendChild(canvas);
+        }
+
+        // Temperature
+        const temperature = document.createElement("div");
+        temperature.className = "temperature light small";
+        temperature.innerHTML = `${period.temperature}°`;
+        hourlyItem.appendChild(temperature);
+
+        hourlyWrapper.appendChild(hourlyItem);
+      });
+
+      wrapper.appendChild(hourlyWrapper);
+    }
+
+    // Play icons after all elements have been added to the DOM
+    if (this.config.useSkycons) {
+      this.playIcons(this);
+    }
+    
     return wrapper;
   },
 
@@ -231,7 +276,10 @@ Module.register("MMM-NOAAWeatherForecast", {
     if (!isMainIcon) {
       iconId = `skycon_${this.iconCache.length}`;
     }
-    this.iconCache.push({ id: iconId, icon });
+    this.iconCache.push({
+      id: iconId,
+      icon
+    });
     return iconId;
   },
 
@@ -241,6 +289,20 @@ Module.register("MMM-NOAAWeatherForecast", {
       inst.skycons.add(icon.id, icon.icon);
     });
     inst.skycons.play();
+  },
+
+  getSkycon: function(forecast) {
+    forecast = forecast.toLowerCase();
+    if (forecast.includes("snow") || forecast.includes("flurries")) return "snow";
+    if (forecast.includes("sleet") || forecast.includes("ice pellets")) return "sleet";
+    if (forecast.includes("windy")) return "wind";
+    if (forecast.includes("foggy")) return "fog";
+    if (forecast.includes("cloudy")) return "cloudy";
+    if (forecast.includes("partly cloudy") || forecast.includes("mostly cloudy")) return "partly-cloudy";
+    if (forecast.includes("clear")) return "clear-day"; // or "clear-night" depending on isDaytime property
+    if (forecast.includes("sunny")) return "clear-day";
+    if (forecast.includes("rain") || forecast.includes("showers") || forecast.includes("drizzle")) return "rain";
+    return "cloudy"; // Default icon
   },
 
   sanitizeNumbers: function (keys) {
