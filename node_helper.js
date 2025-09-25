@@ -22,7 +22,7 @@ module.exports = NodeHelper.create({
   },
 
   socketNotificationReceived: function (notification, payload) {
-    if (notification === "NOAA_CALL_FORECAST_GET") {
+    if (notification === "GET_NOAA_WEATHER_DATA") {
       var self = this;
       // use a browser-like User-Agent for requests
       var needleOptions = {
@@ -103,7 +103,7 @@ module.exports = NodeHelper.create({
                   if (completedRequests === forecastUrls.length) {
                     console.log("[MMM-NOAAWeatherForecast] All forecast data fetched. Sending to main module.");
 //                    console.log("[MMM-NOAAWeatherForecast] Final payload:", JSON.stringify(forecastData));
-                    self.sendSocketNotification("NOAA_CALL_FORECAST_DATA", {
+                    self.sendSocketNotification("NOAA_WEATHER_DATA", {
                       instanceId: payload.instanceId,
                       payload: forecastData
                     });
