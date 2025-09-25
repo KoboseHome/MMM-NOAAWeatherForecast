@@ -57,7 +57,7 @@ Module.register("MMM-NOAAWeatherForecast", {
       location: null,
       units: "us" // use US units for now
     },
-    use      : "forecast", // "forecast" or "hourly"
+    use: "forecast", // "forecast" or "hourly"
     useHeader: true,
     forecastHeaderText: null,
     showSummary: true,
@@ -169,34 +169,35 @@ Module.register("MMM-NOAAWeatherForecast", {
    * This method is called by the MagicMirror framework.
    * It returns the path to the Nunjucks template file.
    */
-  getTemplate: function () {
-    return "MMM-NOAAWeatherForecast.njk";
+  getScripts: function () {
+    return [
+      "https://cdnjs.cloudflare.com/ajax/libs/nunjucks/3.2.1/nunjucks-slim.min.js",
+      "skycons.js"
+    ];
   },
 
   /**
    * This method is called by the MagicMirror framework.
-   * It provides the data to be used in the Nunjucks template.
+   * It returns the path to the Nunjucks template file.
    */
-  getTemplateData: function () {
-    const data = {
-      loading: this.loading,
-      config: this.config,
-      forecast: this.forecast,
-      phrases: this.phrases,
-      inlineIcons: {
-        wind: `fa-wind`,
-        humidity: `wi-humidity`,
-        pressure: `wi-barometer`,
-        dewPoint: `wi-thermometer-exterior`,
-        uvIndex: `wi-day-sunny`
-      },
-      animatedIconSizes: {
-        main: 150,
-        hourly: 50,
-        daily: 60
-      }
-    };
-    return data;
+  getDom: function () {
+    let wrapper = document.createElement("div");
+
+    if (this.loading) {
+      wrapper.innerHTML = this.render("MMM-NOAAWeatherForecast.njk", {
+        loading: this.loading,
+        phrases: this.phrases,
+        config: this.config
+      });
+      wrapper.className = "dimmed light small";
+      return wrapper;
+    }
+    
+    // The previous code had a render method that needed to be re-added
+    // and this is where it's being used.
+    wrapper.innerHTML = this.render("MMM-NOAAWeatherForecast.njk", this.forecast);
+    
+    return wrapper;
   },
 
   /**
@@ -208,6 +209,21 @@ Module.register("MMM-NOAAWeatherForecast", {
       // Once the DOM is ready, we can play the animated icons.
       this.playIcons(this);
     }
+  },
+
+  /**
+   * Helper method to render a Nunjucks template.
+   * This is a non-standard method for MagicMirror modules but is used
+   * in the original MMM-OpenWeatherForecast module to separate HTML from JS.
+   * This method is added to resolve the "this.render is not a function" error.
+   */
+  render: function (template, data) {
+    if (typeof nunjucks === "undefined") {
+      Log.error("[MMM-NOAAWeatherForecast] Nunjucks not loaded.");
+      return document.createTextNode("");
+    }
+    const html = nunjucks.render(template, data);
+    return html;
   },
 
   /**
@@ -268,12 +284,29 @@ Module.register("MMM-NOAAWeatherForecast", {
       Log.error("[MMM-NOAAWeatherForecast] No data received from NOAA.");
       return;
     }
-
-    this.forecast = {};
-    this.forecast.currently = this.processCurrentConditions(data.currentObservation);
-    this.forecast.daily = this.processDailyForecast(data.dailyForecast);
-    this.forecast.hourly = this.processHourlyForecast(data.hourlyForecast);
     
+    // Pass data directly to the template
+    this.forecast = {
+      currently: this.processCurrentConditions(data.currentObservation),
+      daily: this.processDailyForecast(data.dailyForecast),
+      hourly: this.processHourlyForecast(data.hourlyForecast)
+    };
+    
+    // Add other data needed for the template
+    this.forecast.config = this.config;
+    this.forecast.animatedIconSizes = {
+      main: 150,
+      hourly: 50,
+      daily: 60
+    };
+    this.forecast.inlineIcons = {
+      wind: `fa-wind`,
+      humidity: `wi-humidity`,
+      pressure: `wi-barometer`,
+      dewPoint: `wi-thermometer-exterior`,
+      uvIndex: `wi-day-sunny`
+    };
+
     // Add logic to get the correct icon, summary, and other details.
   },
 
