@@ -88,24 +88,22 @@ module.exports = NodeHelper.create({
                 });
               });
             } else {
-              var parsedBody = JSON.parse(body);
-
-              // CORRECTED: Added the missing closing parenthesis for the console.log call.
+              let errorMessage = error ? error : "Unknown API error";
+              try {
+                // If there's no error object, try to parse the body for a message.
+                if (!error) {
+                  var parsedBody = JSON.parse(body);
+                  errorMessage = JSON.stringify(parsedBody);
+                }
+              } catch (e) {
+                // If parsing fails, stick with the default error message.
+              }
               console.log(
                 `[MMM-NOAAWeatherForecast] ${moment().format(
                   "D-MMM-YY HH:mm"
-                )} ** ERROR ** Missing forecast URLs in response: ${
-                  error ? error : JSON.stringify(parsedBody)
-                }`
+                )} ** ERROR ** Failed to get forecast URLs: ${errorMessage}`
               );
             }
-          } else {
-            console.log(
-              `[MMM-NOAAWeatherForecast] ${moment().format(
-                "D-MMM-YY HH:mm"
-              )} ** ERROR ** ${error}`
-            );
-          }
         });
       }
     }
