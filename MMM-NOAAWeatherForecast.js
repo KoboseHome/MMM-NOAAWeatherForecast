@@ -6,7 +6,7 @@
  *
  *MagicMirror² Module:
  *MMM-NOAAWeatherForecast
- *https://github.com/yourusername/MMM-NOAAWeatherForecast
+ *https://github.com/KoboseHome/MMM-NOAAWeatherForecast
  *
  *Icons in use by this module:
  *
