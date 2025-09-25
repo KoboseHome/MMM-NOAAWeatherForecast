@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-/* globals config, moment, Skycons */
+/* globals config, moment, Skycons, nunjucks */
 
 /**
  ********************************
@@ -170,6 +170,23 @@ Module.register("MMM-NOAAWeatherForecast", {
         visibility: this.file("icons/inline/visibility.svg"),
       },
     };
+  },
+
+  /**
+   * Helper method to render a Nunjucks template.
+   * This is a non-standard method for MagicMirror modules but is used
+   * in the original MMM-OpenWeatherForecast module to separate HTML from JS.
+   * This method is added to resolve the "this.render is not a function" error.
+   */
+  render: function (template, data) {
+    if (typeof nunjucks === "undefined") {
+      Log.error("[MMM-NOAAWeatherForecast] Nunjucks not loaded.");
+      return document.createTextNode("");
+    }
+    const html = nunjucks.render(template, data);
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html;
+    return wrapper;
   },
 
   getDom: function () {
