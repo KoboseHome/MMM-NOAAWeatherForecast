@@ -80,8 +80,15 @@ module.exports = NodeHelper.create({
               forecastUrls.forEach(function (item) {
                 needle.get(item.url, needleOptions, function (err, res, data) {
                   if (!err && res.statusCode === 200) {
-                    forecastData[item.key] = data;
-                    console.log(`[MMM-NOAAWeatherForecast] Getting data: ${item.url}`);
+                    try {
+                      forecastData[item.key] = JSON.parse(data);
+                    } catch (parseError) {
+                      console.log(
+                        `[MMM-NOAAWeatherForecast] ${moment().format(
+                          "D-MMM-YY HH:mm"
+                        )} ** ERROR ** Failed to parse JSON for ${item.key}: ${parseError.message}`
+                      );
+                    }
                   } else {
                     console.log(
                       `[MMM-NOAAWeatherForecast] ${moment().format(
