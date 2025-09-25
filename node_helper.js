@@ -35,7 +35,7 @@ module.exports = NodeHelper.create({
         payload.longitude === null ||
         payload.longitude === ""
       ) {
-        console.error(
+        console.log(
           `[MMM-NOAAWeatherForecast] ${moment().format(
             "D-MMM-YY HH:mm"
           )} ** ERROR ** Latitude and/or longitude not provided.`
@@ -85,14 +85,14 @@ module.exports = NodeHelper.create({
                     try {
                       forecastData[item.key] = JSON.parse(data);
                     } catch (parseError) {
-                      console.error(
+                      console.log(
                         `[MMM-NOAAWeatherForecast] ${moment().format(
                           "D-MMM-YY HH:mm"
                         )} ** ERROR ** Failed to parse JSON for ${item.key}: ${parseError.message}`
                       );
                     }
                   } else {
-                    console.error(
+                    console.log(
                       `[MMM-NOAAWeatherForecast] ${moment().format(
                         "D-MMM-YY HH:mm"
                       )} ** ERROR ** Failed to get ${item.key}: ${err}`
@@ -102,7 +102,7 @@ module.exports = NodeHelper.create({
                   completedRequests++;
                   if (completedRequests === forecastUrls.length) {
                     console.log("[MMM-NOAAWeatherForecast] All forecast data fetched. Sending to main module.");
-                    console.debug("[MMM-NOAAWeatherForecast] Final payload:", JSON.stringify(forecastData));
+//                    console.log("[MMM-NOAAWeatherForecast] Final payload:", JSON.stringify(forecastData));
                     self.sendSocketNotification("NOAA_CALL_FORECAST_DATA", {
                       instanceId: payload.instanceId,
                       payload: forecastData
