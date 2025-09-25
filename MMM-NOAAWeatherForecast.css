@@ -1,51 +1,52 @@
-.MMM-OpenWeatherForecast {
-  * {
+.MMM-NOAAWeatherForecast * {
     box-sizing: border-box;
-  }
+}
 
-  .module-content {
-    width: 320px;
-  }
+.MMM-NOAAWeatherForecast .module-content {
+    width: 300px;
+}
 
-  .forecast-container .forecast-item .temperature,
-  .forecast-container .forecast-item .temperature-container {
-    color: #fff;
-  }
+.MMM-NOAAWeatherForecast .forecast-container .forecast-item .temperature,
+.MMM-NOAAWeatherForecast .forecast-container .forecast-item .temperature-container {
+    color: #FFFFFF;
+}
 
-  .temperature .low-temperature,
-  .temperature-container .low-temperature {
-    color: #aaa;
-  }
+.MMM-NOAAWeatherForecast .temperature .low-temperature,
+.MMM-NOAAWeatherForecast .temperature-container .low-temperature {
+    color: #AAA;
+}
 
-  .wrapper.colored .temperature .high-temperature,
-  .wrapper.colored .temperature-container .high-temperature {
-    color: #f8dd70;
-  }
-
-  .wrapper.colored .temperature .low-temperature,
-  .wrapper.colored .temperature-container .low-temperature {
-    color: #6fc4f5;
-  }
-
-  .accumulation::before {
+.MMM-NOAAWeatherForecast .accumulation:before {
     content: " ";
-  }
+}
 
-  .attribution {
+.MMM-NOAAWeatherForecast .attribution {
     font-size: 10px;
     line-height: 16px;
     color: #333;
     text-align: right;
-  }
+}
 
-  /* Current Conditions */
 
-  .current-conditions-wrapper .current.temperature {
+/* Current Conditions */
+
+.MMM-NOAAWeatherForecast .current-conditions-wrapper,
+.MMM-NOAAWeatherForecast .extra-current-conditions-wrapper,
+.MMM-NOAAWeatherForecast .summary-wrapper {
+    text-align: center;
+}
+
+.MMM-NOAAWeatherForecast .current-conditions-wrapper .current.temperature {
     line-height: 80px;
     vertical-align: middle;
-  }
+}
 
-  .current-conditions-wrapper .icon {
+.MMM-NOAAWeatherForecast .current-conditions-wrapper .current.feelslike {
+    line-height: 80px;
+    vertical-align: bottom;
+}
+
+.MMM-NOAAWeatherForecast .current-conditions-wrapper .icon {
     vertical-align: middle;
     line-height: 80px;
     margin-right: 20px;
@@ -53,300 +54,265 @@
     height: 100px;
     display: inline-block;
     position: relative;
-  }
+}
 
-  .extra-current-conditions-wrapper {
+.MMM-NOAAWeatherForecast .extra-current-conditions-wrapper {
     display: block;
+    /*text-align: left;*/
+    /*background-color: #333;*/
     word-wrap: normal;
-    margin: 0 -8px;
-  }
+    margin: 0 -15px;
+}
 
-  /* Inline icons */
-  .inline-icon,
-  .wrapper.tiled .forecast-container .forecast-item .inline-icon {
+
+/* Inline icons */
+
+.MMM-NOAAWeatherForecast .inline-icon,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .inline-icon {
     display: inline-block;
     width: 24px;
     height: 24px;
-    margin-right: 0;
+    margin-right: 0px;
     vertical-align: bottom;
     position: relative;
-  }
+}
 
-  /* Extra Current Conditions */
 
-  .extra-current-conditions-wrapper > * {
+/* Extra Current Conditions */
+
+.MMM-NOAAWeatherForecast .extra-current-conditions-wrapper .temperature-container,
+.MMM-NOAAWeatherForecast .extra-current-conditions-wrapper .precipitation-container,
+.MMM-NOAAWeatherForecast .extra-current-conditions-wrapper .wind-container {
     display: inline-block;
     white-space: nowrap;
-    margin: 0 8px;
+    margin: 0 15px;
     margin-bottom: 10px;
-  }
+}
 
-  /* Summary */
 
-  .summary {
+/* Summary */
+
+.MMM-NOAAWeatherForecast .summary {
     margin: 15px 0;
-  }
+}
 
-  /* Weather Alerts */
-  .weather-alert {
-    margin-bottom: 16px;
-    display: block;
-    width: 100%;
-    border: solid 1px #222;
-    padding: 8px;
-    text-align: left;
-    background-image: url("icons/alert-icon.svg");
-    background-size: 30px 26px;
-    background-repeat: no-repeat;
-    background-position: 6px 10px;
-  }
 
-  .weather-alert .weather-alert-title {
-    font-size: 17px;
-    line-height: 1;
-    margin-bottom: 4px;
-    color: #dd1212;
-    display: block;
-    text-align: left;
-    padding-left: 36px;
-    font-weight: 700;
-  }
+/* Forecast Header */
 
-  .weather-alert .weather-alert-description {
-    font-size: 17px;
-    line-height: 1.2;
-    color: #fff;
-    text-align: left;
-    padding-left: 36px;
-
-    /* truncate to no more than three lines */
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .weather-alert .weather-alert-source {
-    display: block;
-    font-size: 11px;
-    line-height: 1;
-    text-transform: uppercase;
-    color: #999;
-    padding-left: 36px;
-    margin-top: 6px;
-  }
-
-  /* Forecast Header */
-
-  .module-header.forecast-header {
+.MMM-NOAAWeatherForecast .module-header.forecast-header {
     margin-top: 20px;
     margin-bottom: 0;
-  }
+}
 
-  /* ------------ Forecast ------------ */
 
-  .forecast-container.hourly + .forecast-container.daily {
-    border-top: none;
-  }
+/* ------------ Forecast ------------ */
 
-  /* Tiled Layout */
 
-  .wrapper.tiled .forecast-container {
+/* Tiled Layout */
+
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container {
     display: flex;
-    flex-flow: row wrap;
-    place-content: flex-start flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-content: flex-start;
     align-items: flex-start;
-    margin-bottom: 30px;
+    margin-bottom: 0 30px;
     border-top: solid 1px #222;
-  }
+}
 
-  .wrapper.with-forecast-header.tiled .forecast-container {
+.MMM-NOAAWeatherForecast .wrapper.with-forecast-header.tiled .forecast-container {
     border-top: none;
-  }
+}
 
-  .wrapper.tiled .forecast-container .forecast-item {
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item {
     flex-grow: 1;
     flex-shrink: 1;
     min-width: 100px;
-    padding: 10px 5px;
+    padding: 10px 5px 10px 5px;
     border-bottom: solid 1px #222;
-  }
+}
 
-  .wrapper.tiled .forecast-container * {
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container * {
     text-align: center;
-  }
+}
 
-  .wrapper.tiled .forecast-container .forecast-item .time,
-  .wrapper.tiled .forecast-container .forecast-item .forecast-icon-container,
-  .wrapper.tiled .forecast-container .forecast-item .forecast-icon,
-  .wrapper.tiled .forecast-container .forecast-item .temperature,
-  .wrapper.tiled .forecast-container .forecast-item .temperature-container,
-  .wrapper.tiled .forecast-container .forecast-item .precipitation-container,
-  .wrapper.tiled .forecast-container .forecast-item .wind-container,
-  .wrapper.tiled .forecast-container .forecast-item .day-name {
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .time,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .forecast-icon-container,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .forecast-icon,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .temperature,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .temperature-container,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .precipitation-container,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .wind-container,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .day-name {
     display: block;
     margin: auto;
-  }
+}
 
-  .wrapper.tiled .forecast-container .forecast-item .forecast-icon {
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .forecast-icon {
     width: 70px;
     height: 70px;
     margin: 4px auto;
-  }
+}
 
-  .wrapper.tiled .forecast-container .forecast-item .time,
-  .wrapper.tiled .forecast-container .forecast-item .day-name {
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .time,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .day-name {
     font-size: 17px;
     text-transform: uppercase;
-  }
+}
 
-  .wrapper.tiled .forecast-container .forecast-item .wind-gusts {
-    display: block;
-  }
-
-  .wrapper.tiled .forecast-container .forecast-item > * {
-    font-size: 17px;
-    line-height: 1.5;
-    display: block;
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .wind-speed,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .wind-gusts {
+    display: inline-block;
     white-space: nowrap;
-  }
+}
 
-  .wrapper.tiled .forecast-container .forecast-item .temperature,
-  .wrapper.tiled .forecast-container .forecast-item .temperature-container {
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .wind-gusts {
+    display: block;
+}
+
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .temperature,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .temperature-container {
     font-size: 22px;
     padding: 4px 0;
-  }
+}
 
-  /* ------------ Table Layout ------------ */
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .precipitation-container,
+.MMM-NOAAWeatherForecast .wrapper.tiled .forecast-container .forecast-item .wind-container {
+    font-size: 17px;
+    line-height: 1.5;
+}
 
-  .wrapper.table .forecast-container {
+
+/* ------------ Table Layout ------------ */
+
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container {
     display: table;
     border-collapse: collapse;
     width: 100%;
     font-size: 17px;
     line-height: 1;
     border-bottom: solid 1px #222;
-  }
+}
 
-  .wrapper.table .forecast-container.daily .header-row {
-    border-top: 16px solid transparent;
-  }
-
-  .wrapper.table .forecast-container.hourly + .forecast-container.daily {
-    border-bottom: none;
-  }
-
-  .wrapper.table
-    .forecast-container.hourly
-    + .forecast-container.daily
-    .forecast-item,
-  .wrapper.table
-    .forecast-container.hourly
-    + .forecast-container.daily
-    .header-row {
-    border-top: none;
-    border-bottom: solid 1px #222;
-  }
-
-  .wrapper.table
-    .forecast-container.hourly
-    + .forecast-container.daily
-    .header-row {
-    border-top: 16px solid transparent;
-  }
-
-  .wrapper.table .forecast-container .forecast-item,
-  .wrapper.table .forecast-container .header-row {
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .forecast-item,
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .header-row {
     display: table-row;
     border-top: solid 1px #222;
-  }
+}
 
-  .wrapper.table
-    .forecast-container.hourly
-    + .MMM-OpenWeatherForecast
-    .wrapper.table
-    .forecast-container.daily
-    > .header-row:first-child {
+.MMM-NOAAWeatherForecast .wrapper.with-forecast-header.table .forecast-container>div:first-child,
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .header-row {
     border-top: none;
-  }
+}
 
-  .wrapper.with-forecast-header.table .forecast-container > div:first-child,
-  .wrapper.table .forecast-container .header-row {
-    border-top: none;
-  }
-
-  .wrapper.table .forecast-container .header-row .date-time-header {
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .header-row .date-time-header {
     text-align: left;
     overflow: visible;
-  }
+}
 
-  .wrapper.table .forecast-container .forecast-item > span,
-  .wrapper.table .forecast-container .header-row > span {
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .forecast-item > span,
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .header-row > span {
     display: table-cell;
     font-size: 17px;
     text-align: center;
     vertical-align: middle;
     height: 40px;
-  }
+}
 
-  .wrapper.table .forecast-container .header-row > span {
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .header-row > span {
     height: 32px;
     font-size: 14px;
     text-transform: uppercase;
     vertical-align: bottom;
     padding-bottom: 2px;
-    width: auto;
-    min-width: 50px;
-  }
+}
 
-  .wrapper.table .forecast-container .forecast-item > span:first-child {
-    text-align: left;
-  }
-  .wrapper.table .forecast-container .forecast-item > span:last-child {
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .forecast-item>span:first-child {
     text-align: right;
-  }
+    width: 1px;
+}
 
-  .wrapper.table .forecast-container .forecast-item .forecast-icon {
+/* .MMM-NOAAWeatherForecast .wrapper.table .forecast-container .forecast-item>span:last-child {
+    text-align: right;
+} */
+
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .forecast-item .forecast-icon-container {
+	padding: 0 0.5em;
+    width: 1px;
+}
+
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .forecast-item .forecast-icon {
     width: 30px;
     height: 30px;
-    display: block;
     vertical-align: middle;
-  }
+}
 
-  .wrapper.table .forecast-container .header-row .section-title {
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .forecast-item .time,
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .forecast-item .high-temperature,
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .forecast-item .low-temperature {
     white-space: nowrap;
-    overflow: visible;
-    text-align: left;
-    width: 105px;
-    max-width: 105px;
-    line-height: 1.5;
-  }
+}
 
-  .wrapper.table .forecast-container .forecast-item .time,
-  .wrapper.table .forecast-container .forecast-item .day-name {
-    width: 105px;
-  }
-
-  .wrapper.table .forecast-container .header-row .weather-icon-header,
-  .wrapper.table .forecast-container .forecast-item .forecast-icon-container {
-    width: 80px;
-  }
-
-  .wrapper.table .forecast-container .header-row .temperature-header,
-  .wrapper.table .forecast-container .forecast-item .temperature-container {
-    width: 100px;
-    white-space: nowrap;
-  }
-
-  .wrapper.table .forecast-container .forecast-item .time,
-  .wrapper.table .forecast-container .forecast-item .high-temperature,
-  .wrapper.table .forecast-container .forecast-item .low-temperature {
-    white-space: nowrap;
-  }
-
-  .wrapper.table .forecast-container .forecast-item .wind-gusts,
-  .wrapper.table .forecast-container .forecast-item .accumulation {
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .forecast-item .wind-gusts,
+.MMM-NOAAWeatherForecast .wrapper.table .forecast-container .forecast-item .accumulation {
     display: block;
     white-space: nowrap;
-  }
+}
+
+
+/* ------------ Bars Layout ------------ */
+
+.MMM-NOAAWeatherForecast .forecast-bars .temp {
+    color: #FFF;
+}
+
+.MMM-NOAAWeatherForecast .wrapper.bars .header-row > th {
+    height: 32px;
+    padding-bottom: 2px;
+    font-size: 14px;
+    text-transform: uppercase;
+    vertical-align: bottom;
+}
+
+.MMM-NOAAWeatherForecast .forecast-bars .forecast-row td.day-name,
+.MMM-NOAAWeatherForecast .forecast-bars .forecast-row td.forecast-icon-container,
+.MMM-NOAAWeatherForecast .forecast-bars .forecast-row td.precipitation-container,
+.MMM-NOAAWeatherForecast .forecast-bars .forecast-row td.wind-container {
+	width: 1%;
+}
+
+.MMM-NOAAWeatherForecast .forecast-bars .forecast-icon {
+	width: 30px;
+    vertical-align: middle;
+}
+
+.MMM-NOAAWeatherForecast .forecast-bar {
+	display: table;
+	overflow: hidden;
+}
+
+.MMM-NOAAWeatherForecast .forecast-bar > span {
+	display: table-cell;
+	text-align: center;
+}
+
+.MMM-NOAAWeatherForecast .forecast-bars .bar {
+	background-color: #FFF;
+	line-height: 0.8em;
+	border-radius: 1em;
+	border: 0.5em transparent solid;
+	background-clip: padding-box;
+}
+
+.MMM-NOAAWeatherForecast .forecast-bars .forecast-icon-container {
+	padding: 0 0.5em;
+}
+
+.MMM-NOAAWeatherForecast .forecast-bars .precipitation-container,
+.MMM-NOAAWeatherForecast .forecast-bars .wind-container,
+.MMM-NOAAWeatherForecast .wrapper.bars .header-row > th.precipitation-header,
+.MMM-NOAAWeatherForecast .wrapper.bars .header-row > th.wind-header {
+    padding: 0 0.5em 0 0;
+    text-align: center;
 }
