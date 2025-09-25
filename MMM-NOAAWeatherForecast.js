@@ -113,9 +113,7 @@ Module.register("MMM-NOAAWeatherForecast", {
     this.loaded = false;
     this.instanceId = moment().unix();
     this.getForecast();
-    if (this.config.useSkycons) {
-      this.skycons = new Skycons({ color: "white" });
-    }
+    // The Skycons initialization has been moved to getDom()
     this.scheduleUpdate();
   },
 
@@ -127,6 +125,13 @@ Module.register("MMM-NOAAWeatherForecast", {
       wrapper.innerHTML = "LOADING...";
       wrapper.className = "dimmed light small";
       return wrapper;
+    }
+
+    // Initialize Skycons only once
+    if (this.config.useSkycons && !this.skycons) {
+        this.skycons = new Skycons({ color: "white" });
+        // After Skycons is initialized and the DOM is ready, play the icons
+        this.playIcons(this);
     }
 
     // Main weather display
