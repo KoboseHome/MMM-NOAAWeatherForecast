@@ -78,7 +78,9 @@ module.exports = NodeHelper.create({
               var forecastData = {};
               var completedRequests = 0;
               forecastUrls.forEach(function (item) {
+                console.log(`[MMM-NOAAWeatherForecast] Making request for ${item.key}: ${item.url}`);
                 needle.get(item.url, needleOptions, function (err, res, data) {
+                  console.log(`[MMM-NOAAWeatherForecast] Received data for ${item.key}. Data type: ${typeof data}`);
                   if (!err && res.statusCode === 200) {
                     try {
                       forecastData[item.key] = JSON.parse(data);
@@ -99,6 +101,8 @@ module.exports = NodeHelper.create({
 
                   completedRequests++;
                   if (completedRequests === forecastUrls.length) {
+                    console.log("[MMM-NOAAWeatherForecast] All forecast data fetched. Sending to main module.");
+                    console.log("[MMM-NOAAWeatherForecast] Final payload:", JSON.stringify(forecastData));
                     self.sendSocketNotification("NOAA_CALL_FORECAST_DATA", {
                       instanceId: payload.instanceId,
                       payload: forecastData
