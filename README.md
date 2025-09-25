@@ -12,8 +12,8 @@ Just clone the module into your modules directory and install the dependencies:
 
 ```bash
 cd ~/MagicMirror/modules
-git clone https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast
-cd MMM-OpenWeatherForecast
+git clone https://github.com/KoboseHome/MMM-NOAAWeatherForecast.git
+cd MMM-NOAAWeatherForecast
 npm ci
 ```
 
@@ -22,7 +22,7 @@ npm ci
 Just enter the module's directory, pull the update and install the dependencies:
 
 ```bash
-cd ~/MagicMirror/modules/MMM-OpenWeatherForecast
+cd ~/MagicMirror/modules/MMM-NOAAWeatherForecast
 git pull
 npm ci
 ```
@@ -31,7 +31,6 @@ npm ci
 
 At a minimum you need to supply the following required configuration parameters:
 
-* `apikey`
 * `latitude`
 * `longitude`
 
